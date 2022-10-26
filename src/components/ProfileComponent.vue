@@ -22,7 +22,6 @@
                     label="Nama"
                     v-model="pegawais.nama_pegawai"
                     single-line
-                    hide-details
                 ></v-text-field>
                 <v-select
                     class="mx-8"
@@ -36,21 +35,19 @@
                     label="Telepon"
                     v-model="pegawais.hp_pegawai"
                     single-line
-                    hide-details
                 ></v-text-field>
-                <v-select
+                <!-- <v-select
                     class="mx-8"
                     label="Jabatan"
                     v-model="pegawais.jabatan_pegawai"
                     :items="jabatans"
                     :rules="[(v) => !!v || 'Jabatan tidak boleh kosong']"
-                ></v-select>
+                ></v-select> -->
                 <v-text-field
                     class="mx-8"
                     label="Email"
                     v-model="pegawais.email_pegawai"
                     single-line
-                    hide-details
                 ></v-text-field>
                 <v-checkbox
                     class="mx-8"
@@ -62,7 +59,6 @@
                     label="New Password"
                     v-model="new_pass"
                     single-line
-                    hide-details
                     type="password"
                 ></v-text-field>
                 <v-text-field v-if="checkbox"
@@ -70,7 +66,6 @@
                     label="New Password Confirmation"
                     v-model="new_pass_con"
                     single-line
-                    hide-details
                     type="password"
                 ></v-text-field>
                 <v-card-actions>
@@ -164,7 +159,6 @@ export default {
     },
     dialogGambarShow (pegawai) {
       this.pictTemp = this.$urlFoto + pegawai.foto_pegawai
-      console.log(this.pictTemp)
       this.namaTemp = pegawai.nama_pegawai
       this.dialogGambar = true
     },
@@ -234,6 +228,7 @@ export default {
           jenis_kelamin: this.pegawais.jenis_kelamin,
           email_pegawai: this.pegawais.email_pegawai,
           hp_pegawai: this.pegawais.hp_pegawai,
+          alamat_pegawai: this.pegawais.alamat_pegawai,
           jabatan_pegawai: this.pegawais.jabatan_pegawai
         }
 
@@ -249,9 +244,9 @@ export default {
           this.load = false
           this.pegawais = response.data
           this.readData()
-          this.$router.push({
-            name: 'Login'
-          })
+          // this.$router.push({
+          //   name: 'Login'
+          // })
         }).catch(error => {
           this.error_message = error.response.data.message
           this.color = 'red'
@@ -264,6 +259,7 @@ export default {
           jenis_kelamin: this.pegawais.jenis_kelamin,
           email_pegawai: this.pegawais.email_pegawai,
           hp_pegawai: this.pegawais.hp_pegawai,
+          alamat_pegawai: this.pegawais.alamat_pegawai,
           jabatan_pegawai: this.pegawais.jabatan_pegawai,
           old_pass: this.new_pass,
           password: this.new_pass_con
@@ -282,7 +278,7 @@ export default {
           this.pegawais = response.data
           this.readData()
           this.$router.push({
-            name: 'Login'
+            name: 'login'
           })
         }).catch(error => {
           this.error_message = error.response.data.message

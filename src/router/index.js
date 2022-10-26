@@ -67,7 +67,7 @@ const routes = [
     path: '/customer',
     name: 'Pesan Menu',
     meta: { title: 'Pesan Menu' },
-    component: importComponent('PesanComponent')
+    component: importComponent('PesanMenuComponent')
   }
 
   // route level code-splitting

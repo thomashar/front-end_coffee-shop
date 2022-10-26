@@ -7,14 +7,28 @@
             <v-card-text class="pt-4">
               <div>
                 <v-form v-model="valid" ref="form">
-                  <v-text-field label="E-mail" v-model="email_pegawai" :rules="emailRules" required>
+                  <v-text-field
+                    label="E-mail"
+                    v-model="email_pegawai"
+                    :rules="emailRules"
+                    required
+                    @keydown.enter="submit">
                   </v-text-field>
-                  <v-text-field label="Password" v-model="password" type="password" min="8" :rules="passwordRules" counter clearable required>
+                  <v-text-field
+                    label="Password"
+                    v-model="password"
+                    type="password"
+                    :rules="passwordRules"
+                    counter
+                    clearable
+                    required
+                    @keydown.enter="submit">
                   </v-text-field>
                 <div>
                   <v-layout class=" mt-6 ml-2" justify-space-between>
-                    <link class="text-sm-body-2" @click="dialogRegister = true">
+                    <a class="text-sm-body-2" @click="dialogRegister = true">
                       Register
+                    </a>
                     <div>
                       <v-btn class="mr-2" @click="submit" :class=" { 'grey darken-1 white--text' : valid, disabled: !valid }">
                         Go
@@ -37,11 +51,12 @@
                                   label="Nama"
                                   required
                               ></v-text-field>
-                              <v-text-field
-                                  v-model="form.jenis_kelamin"
+                              <v-select
                                   label="Jenis Kelamin"
-                                  required
-                              ></v-text-field>
+                                  v-model="form.jenis_kelamin"
+                                  :items="kelamins"
+                                  :rules="[(v) => !!v || 'Jenis kelamin tidak boleh kosong']"
+                              ></v-select>
                               <v-text-field
                                   v-model="form.hp_pegawai"
                                   label="No. Telpon"
@@ -122,6 +137,10 @@ export default {
         email_pegawai: '',
         password: ''
       },
+      kelamins: [
+        'Laki-laki',
+        'Perempuan'
+      ],
       password: '',
       passwordRules: [
         (v) => !!v || 'Password tidak boleh kosong'

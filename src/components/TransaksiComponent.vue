@@ -13,12 +13,15 @@
                 @keydown.enter="readNamaPembeli(search)"
             ></v-text-field>
             <v-spacer></v-spacer>
-              <v-btn color="success" dark @click="dialog = true">
+              <v-btn color="success" dark @click="tambahHandler()">
                   Tambah
               </v-btn>
             </v-card-title>
             <v-data-table :headers="headers" :items="transaksis" :search="search" >
                 <template v-slot:[`item.actions`]="{ item }">
+                    <v-icon small class="mr-2" @click="bayarHandler(item)">
+                        mdi-cash
+                    </v-icon>
                     <v-icon small class="mr-2" @click="editHandler(item)">
                         mdi-pencil
                     </v-icon>
@@ -54,8 +57,8 @@
                         >
                           <template v-slot:activator="{ on, attrs }">
                             <v-text-field
-                              v-model="form.tanggal_stok"
-                              label="Tanggal Masuk"
+                              v-model="form.tanggal_transaksi"
+                              label="Tanggal Transaksi (YYYY-MM-DD)"
                               prepend-icon="mdi-calendar"
                               readonly
                               v-bind="attrs"
@@ -63,16 +66,104 @@
                             ></v-text-field>
                           </template>
                           <v-date-picker
-                              v-model="form.tanggal_stok"
+                              v-model="form.tanggal_transaksi"
                               @input="menu2 = false"
                           ></v-date-picker>
                         </v-menu>
+
+                        <v-data-table
+                          v-if="inputType === 'Tambah'"
+                          :headers="detailpesan"
+                          :items="menus">
+                            <template v-slot:[`item.Jumlah`]>
+                              <v-row dense>
+                                <v-col
+                                  class="mt-4"
+                                  cols="4"
+                                  sm="2"
+                                  md="1"
+                                  >
+                                  <v-icon small class="mr-2" @click="countTemp('Tambah', menus)">
+                                    mdi-plus
+                                  </v-icon>
+                                </v-col>
+                                <v-col
+                                  cols="12"
+                                  sm="4"
+                                  md="3"
+                                  >
+                                  <v-card-text
+                                    class="text-align-center ml-1"
+                                    >
+                                    {{menus.jumlah_menu}}
+                                  </v-card-text>
+                                </v-col>
+                                <v-col
+                                  class="mt-4"
+                                  cols="4"
+                                  sm="2"
+                                  md="1"
+                                  >
+                                  <v-icon v-if="form.jumlah_menu === 0" small class="ml-2" disable>
+                                    mdi-minus
+                                  </v-icon>
+                                  <v-icon v-else-if="form.jumlah_menu > 0" small class="ml-2" @click="countTemp('Kurang', menus)">
+                                    mdi-minus
+                                  </v-icon>
+                                </v-col>
+                              </v-row>
+                            </template>
+                        </v-data-table>
+
+                        <v-data-table
+                          v-else-if="inputType === 'Ubah' || inputType === 'Bayar'"
+                          :headers="detailpesan"
+                          :items="pesanans">
+                            <template v-slot:[`item.Jumlah`]>
+                              <v-row dense>
+                                <v-col
+                                  class="mt-4"
+                                  cols="4"
+                                  sm="2"
+                                  md="1"
+                                  >
+                                  <v-icon v-if="inputType === 'Ubah'" small class="mr-2" @click="countTemp('Tambah', menus)">
+                                    mdi-plus
+                                  </v-icon>
+                                </v-col>
+                                <v-col
+                                  cols="12"
+                                  sm="4"
+                                  md="3"
+                                  >
+                                  <v-card-text
+                                    class="text-align-center ml-1"
+                                    >
+                                    {{form.jumlah_menu}}
+                                  </v-card-text>
+                                </v-col>
+                                <v-col
+                                  class="mt-4"
+                                  cols="4"
+                                  sm="2"
+                                  md="1"
+                                  >
+                                  <v-icon v-if="form.jumlah_menu === 0 && inputType === 'Ubah'" disable small class="ml-2">
+                                    mdi-minus
+                                  </v-icon>
+                                  <v-icon v-else-if="form.jumlah_menu > 0 && inputType === 'Ubah'" small class="ml-2" @click="countTemp('Kurang', menus)">
+                                    mdi-minus
+                                  </v-icon>
+                                </v-col>
+                              </v-row>
+                            </template>
+                        </v-data-table>
+
                         <v-text-field
-                          type="date"
-                          v-model="form.tanggal_transaksi"
-                          label="Tanggal Transaksi"
-                          required>
+                          v-model="form.nama_pegawai"
+                          label="Nama Pegawai">
                         </v-text-field>
+
                     </v-container>
                 </v-card-text>
                 <v-card-actions>
@@ -86,72 +177,6 @@
                 </v-card-actions>
             </v-card>
         </v-dialog>
-
-        <!-- <v-dialog v-model="dialogCetak" persistent max-width="600px">
-            <v-card>
-                <v-card-title>
-                    <span class="headline">Cetak Struk Transaksi</span>
-                </v-card-title>
-                <div>
-                    <vue-html2pdf
-                        :show-layout="false"
-                        :float-layout="true"
-                        :enable-download="true"
-                        :preview-modal="true"
-                        :paginate-elements-by-height="1400"
-                        filename="hee hee"
-                        :pdf-quality="2"
-                        :manual-pagination="false"
-                        pdf-format="a4"
-                        pdf-orientation="landscape"
-                        pdf-content-width="800px"
-
-                        @progress="onProgress($event)"
-                        @hasStartedGeneration="hasStartedGeneration()"
-                        @hasGenerated="hasGenerated($event)"
-                        ref="html2Pdf"
-                    >
-                        <section slot="pdf-content">
-                            <table>
-                                <tr>
-                                    <td><img src=src/assets/logo.png></td>
-                                    <td><h3>Atma Korean BBQ</h3>
-                                        <br><h5> PLACE TO GRILL</h5>
-                                        <br>Jl.Babarsari No. 43 Yogyakarta
-                                        <br>552181
-                                        <br>Telp. (0274) 487711
-                                        <br>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>-------------------------------------</td>
-                                </tr>
-                                <tr>
-                                    <td>Receipt # {{ 'AKB-' + 'ddMMyy' + 'id' }}</td>
-                                    <td>Date {{  }}</td>
-                                </tr>
-                                <tr>
-                                    <td>-------------------------------------</td>
-                                </tr>
-                                <tr>
-                                    <td>Table</td>
-                                </tr>
-
-                            </table>
-                        </section>
-                    </vue-html2pdf>
-                </div>
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" text @click="cancel">
-                        Cancel
-                    </v-btn>
-                    <v-btn color="blue darken-1" text @click="setForm">
-                        Save
-                    </v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog> -->
 
         <v-dialog v-model="dialogConfirm" persistent max-width="400px">
             <v-card>
@@ -193,7 +218,8 @@ export default {
       error_message: '',
       color: '',
       search: null,
-      menu: false,
+      banyakMenu: false,
+      jumlahTemp: 0,
       menu2: false,
       statusData: '',
       dialog: false,
@@ -206,44 +232,45 @@ export default {
           sortable: true,
           value: 'nama_pembeli'
         },
-        { text: 'Nama Pegawai', value: 'nama_pegawai' },
         { text: 'Tanggal Transaksi', value: 'tanggal_transaksi' },
         { text: 'Total Harga', value: 'total_harga' },
         { text: 'Actions', value: 'actions' }
       ],
+      detailpesan: [
+        {
+          text: 'Nama menu',
+          align: 'start',
+          sortable: true,
+          value: 'nama_menu'
+        },
+        { text: 'Harga Menu', value: 'harga_menu' },
+        { text: 'Jumlah', value: 'Jumlah' }
+      ],
+      jumlahCounter: [],
       transaksi: new FormData(),
       transaksis: [],
-      customers: [],
+      // pesanan: new FormData(),
       pesanans: [],
+      // pegawai: new FormData(),
+      pegawais: [],
+      menus: [],
       form: {
         nama_pembeli: '',
         nama_pegawai: '',
-        tanggal_transaksi: '',
-        total_harga: '',
+        tanggal_transaksi: null,
+        subtotal: 0,
+        total_harga: 0,
         nama_menu: '',
-        jumlah_menu: ''
+        tax: 0,
+        jumlah_menu: 0
       },
       deleteId: '',
       restoreId: '',
       editId: '',
-      mejaId: ''
+      bayarId: ''
     }
   },
   methods: {
-    setForm () {
-      if (this.inputType === 'Tambah') {
-        this.save()
-      } else {
-        this.update()
-      }
-    },
-    reverseData () {
-      if (this.statusData === 'Restore') {
-        this.restoreData()
-      } else {
-        this.deleteData()
-      }
-    },
     // read data transaksi
     readData () {
       const url = this.$api + '/transaksi'
@@ -266,25 +293,48 @@ export default {
         this.pesanans = response.data.data
       })
     },
-    // read data customer
-    readDataCustomer () {
-      const url = this.$api + '/customer'
-      this.$http.get(url, {
-        headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
-        }
-      }).then(response => {
-        this.customers = response.data.data
-      })
-    },
-    readNamaPembeli (searchName) {
-      const url = this.$api + '/transaksiByName/' + searchName
+    readDataMenu () {
+      const url = this.$api + '/menuNotDeleted'
       this.$http.get(url, {
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('token')
         }
       }).then(response => {
         this.menus = response.data.data
+        this.menus.jumlah_menu = 0
+      })
+    },
+    countDataMenu () {
+      const url = this.$api + '/countMenu'
+      this.$http.get(url, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      }).then(response => {
+        this.banyakMenu = response.data.data
+        this.pushCounter()
+        // this.makeVarCounter()
+      })
+    },
+    // read data customer
+    // readDataCustomer () {
+    //   const url = this.$api + '/customer'
+    //   this.$http.get(url, {
+    //     headers: {
+    //       Authorization: 'Bearer ' + localStorage.getItem('token')
+    //     }
+    //   }).then(response => {
+    //     this.customers = response.data.data
+    //   })
+    // },
+    readNamaPembeli (searchName) {
+      const url = this.$api + '/pesananByName/' + searchName
+      this.$http.get(url, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      }).then(response => {
+        this.transaksis = response.data.data
       })
     },
     // get tanggal hari ini
@@ -296,52 +346,96 @@ export default {
       const tanggalwaktu = tanggal + '   ' + waktu
       return tanggalwaktu
     },
-
-    // simpan data transaksi
-    // save() {
-    //     this.transaksi.append('id_meja', this.form.id_meja);
-    //     this.transaksi.append('id_customer', this.form.id_customer);
-    //     this.transaksi.append('status_transaksi', this.form.status_transaksi);
-    //     this.transaksi.append('tanggal_transaksi', this.form.tanggal_transaksi);
-    //     this.transaksi.append('sesi', this.form.sesi);
-
-    //     var url = this.$api + '/transaksi'
-    //     this.load = true
-    //     this.$http.post(url, this.transaksi, {
-    //         headers: {
-    //             'Authorization': 'Bearer ' + localStorage.getItem('token')
-    //         }
-    //     }).then(response => {
-    //         this.error_message=response.data.message;
-    //         this.color="green"
-    //         this.snackbar=true;
-    //         this.load = false;
-    //         this.close();
-    //         this.resetForm();
-    //     }).catch(error => {
-    //         this.error_message=error.response.data.message;
-    //         this.color="red"
-    //         this.snackbar=true;
-    //         this.load = false;
-    //     }).finally(()=> {
-    //         this.transaksis = [];
-    //         this.readData();
-    //         this.readDataMeja();
-    //     })
+    // makeVarCounter () {
+    //   for (let i = 0; i < this.banyakMenu; i++) {
+    //     this.jumlahCounter[i] = 0
+    //   }
+    //   for (let k = 0; k < this.banyakMenu; k++) {
+    //     const jumlahTemp = 0
+    //     this.menus[k].push(jumlahTemp)
+    //   }
+    //   console.log(this.menus)
     // },
+    pushCounter () {
+      for (let i = 0; i < this.banyakMenu; i++) {
+        this.menus[i].push(this.jumlahTemp)
+      }
+      console.log(this.menus)
+    },
+    setForm () {
+      if (this.inputType === 'Tambah') {
+        this.save()
+      } else if (this.inputType === 'Ubah') {
+        this.update()
+      } else if (this.inputType === 'Bayar') {
+        this.bayar()
+      }
+    },
+    reverseData () {
+      if (this.statusData === 'Restore') {
+        this.restoreData()
+      } else {
+        this.deleteData()
+      }
+    },
+    countTemp (value, item) {
+      if (value === 'Tambah') {
+        item.jumlah_menu = item.jumlah_menu + 1
+      } else if (value === 'Kurang' && item.jumlah_menu > 0) {
+        item.jumlah_menu = item.jumlah_menu - 1
+      }
+    },
+    countSubTotal () {
+      this.form.subtotal = this.transaksi.jumlah_menu * this.transaksi.harga_menu
+    },
+    countTax () {
+      this.form.tax = this.transaksi.subtotal / 10
+    },
+    countTotalHarga () {
+      this.form.total_harga = this.transaksi.tax + this.transaksi.subtotal
+    },
+    loginName () {
+      return localStorage.getItem('nama')
+    },
+    // simpan data transaksi
+    save () {
+      this.transaksi.append('tanggal_transaksi', this.form.tanggal_transaksi)
 
+      const url = this.$api + '/transaksi'
+      this.load = true
+      this.$http.post(url, this.transaksi, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      }).then(response => {
+        this.error_message = response.data.message
+        this.color = 'green'
+        this.snackbar = true
+        this.load = false
+        this.close()
+        this.resetForm()
+      }).catch(error => {
+        this.error_message = error.response.data.message
+        this.color = 'red'
+        this.snackbar = true
+        this.load = false
+      })
+    },
     // ubah data transaksi
     update () {
       const newData = {
-        tanggal_transaksi: this.form.tanggal_transaksi
+        nama_pembeli: this.form.nama_pembeli,
+        jumlah_menu: this.form.jumlah_menu,
+        subtotal: this.countSubTotal(),
+        nama_menu: this.form.nama_menu
       }
-      const url = this.$api + 'up/transaksi/' + this.editId
+      const url = this.$api + '/transaksi/' + this.editId
       this.load = true
       this.$http.put(url, newData, {
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('token')
         }
-      }).then(response => {
+      }).then().then(response => {
         this.error_message = response.data.message
         this.color = 'green'
         this.snackbar = true
@@ -354,10 +448,6 @@ export default {
         this.color = 'red'
         this.snackbar = true
         this.load = false
-      }).finally(() => {
-        this.transaksis = []
-        this.readData()
-        this.readDataMeja()
       })
     },
     // soft delete data transaksi
@@ -384,9 +474,23 @@ export default {
         this.load = false
       })
     },
+    tambahHandler () {
+      this.dialog = true
+      this.readDataMenu()
+    },
     editHandler (item) {
       this.inputType = 'Ubah'
       this.editId = item.id
+      item.nama_pegawai = localStorage.getItem('nama')
+      this.BEHandler(item)
+    },
+    bayarHandler (item) {
+      this.inputType = 'Bayar'
+      this.bayarId = item.id
+      item.nama_pegawai = localStorage.getItem('nama')
+      this.BEHandler(item)
+    },
+    BEHandler (item) {
       this.form.nama_pembeli = item.nama_pembeli
       this.form.nama_pegawai = item.nama_pegawai
       this.form.tanggal_transaksi = item.tanggal_transaksi
@@ -394,6 +498,7 @@ export default {
       this.form.nama_menu = item.nama_menu
       this.form.jumlah_menu = item.jumlah_menu
       this.dialog = true
+      this.readDataPesanan()
     },
     deleteHandler (id) {
       this.deleteId = id
@@ -423,8 +528,19 @@ export default {
     },
     resetForm () {
       this.form = {
+        nama_menu: null,
+        nama_pembeli: null,
+        jumlah_menu: 0,
+        tax: 0,
+        subtotal: 0,
+        total_harga: 0,
+        nama_pegawai: null,
         tanggal_transaksi: null
       }
+      this.pesanans = []
+    },
+    countMenu () {
+
     }
   },
   computed: {
@@ -434,8 +550,8 @@ export default {
   },
   mounted () {
     this.readData()
-    this.readDataCustomer()
-    this.readDataPesanan()
+    this.countDataMenu()
+    // this.readDataPegawai()
   }
 }
 </script>

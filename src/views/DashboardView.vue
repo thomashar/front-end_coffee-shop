@@ -117,7 +117,8 @@ export default {
       localStorage.removeItem('token')
       localStorage.removeItem('role')
       localStorage.removeItem('nama')
-      console.log(localStorage.getItem('token'))
+      localStorage.removeItem('foto')
+      //    console.log(localStorage.getItem('token'))
       this.$router.replace('/admin')
     },
     getrole () {

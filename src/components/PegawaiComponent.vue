@@ -2,8 +2,23 @@
     <v-main class="list">
         <h3 class="text-h3 font-weight-medium mb-5"> Pegawai </h3>
 
-        <h5> Pegawai mendaftar : </h5>
-
+        <h5 class="pa-4"> Pegawai mendaftar : </h5>
+        <v-row>
+          <v-col v-for="calon in pegawaiMendaftars" :key="calon.id">
+            <v-card class="text-xs ma-4 cards pa-2" @click="acceptHandler(calon)"
+                  :style="{
+                      background: '#ffffff',
+                      maxWidth: '384px'
+                  }">
+              <v-card-title>{{calon.nama_pegawai}}</v-card-title>
+              <v-card-subtitle>
+                {{calon.jenis_kelamin}}<br/>
+                {{calon.hp_pegawai}}<br/>
+                {{calon.email_pegawai}}
+              </v-card-subtitle>
+            </v-card>
+          </v-col>
+        </v-row>
         <v-card>
             <v-card-title>
             <v-text-field
@@ -15,7 +30,7 @@
                 @keydown.enter="readNamaPegawai(search)"
             ></v-text-field>
             <v-spacer></v-spacer>
-            <v-btn color="success" dark @click="dialogTambah = true">
+            <v-btn color="success" dark @click="dialog = true">
                 Tambah
             </v-btn>
             </v-card-title>
@@ -34,7 +49,7 @@
             </v-data-table>
         </v-card>
 
-        <v-dialog v-model="dialogTambah" persistent max-width="600px">
+        <v-dialog v-model="dialog" persistent max-width="600px">
             <v-card>
                 <v-card-title>
                     <span class="headline">{{ formTitle }} Pegawai</span>
@@ -99,7 +114,66 @@
             </v-card>
         </v-dialog>
 
-        <v-dialog v-model="dialog" persistent max-width="600px">
+        <v-dialog v-model="dialogAccept" persistent max-width="600px">
+          <v-card>
+                <v-card-title>
+                    <span class="headline">{{ formTitle }} Pegawai</span>
+                </v-card-title>
+                <v-card-text>
+                    <v-container>
+                        <v-text-field
+                            v-model="form.nama_pegawai"
+                            label="Nama Pegawai"
+                            readonly
+                        ></v-text-field>
+
+                        <v-select
+                            v-model="form.jenis_kelamin"
+                            :items="kelamins"
+                            label="Jenis kelamin"
+                            readonly
+                        ></v-select>
+
+                        <v-text-field
+                            v-model="form.hp_pegawai"
+                            label="HP"
+                            readonly
+                        ></v-text-field>
+
+                        <v-text-field
+                            v-model="form.alamat_pegawai"
+                            label="Alamat"
+                            readonly
+                        ></v-text-field>
+
+                        <v-text-field
+                            v-model="form.email_pegawai"
+                            label="Email"
+                            readonly
+                        ></v-text-field>
+
+                        <v-select
+                            v-model="form.jabatan_pegawai"
+                            :items="jabatans"
+                            :rules="[(v) => !!v || 'Jabatan tidak boleh kosong']"
+                            label="Jabatan"
+                            required
+                        ></v-select>
+                    </v-container>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" text @click="cancel">
+                        Cancel
+                    </v-btn>
+                    <v-btn color="blue darken-1" text @click="setForm">
+                        Save
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- <v-dialog v-model="dialog" persistent max-width="600px">
             <v-card>
                 <v-card-title>
                     <span class="headline">{{ formTitle }} Pegawai</span>
@@ -156,24 +230,27 @@
                     </v-btn>
                 </v-card-actions>
             </v-card>
-        </v-dialog>
+        </v-dialog> -->
 
         <v-dialog v-model="dialogConfirm" persistent max-width="400px">
             <v-card>
                 <v-card-title>
-                    <span class="headline">Warning!</span>
+                  <span class="headline">Warning!!!</span>
                 </v-card-title>
-                <v-card-text>
-                    Anda yakin ingin mengnon-aktifkan pegawai?
+                <v-card-text v-if="statusData === 'Hapus'">
+                    Anda yakin ingin menghapus transaksi?
+                </v-card-text>
+                <v-card-text v-else-if="statusData === 'Restore'">
+                    Anda yakin ingin memulihkan transaksi?
                 </v-card-text>
                 <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" text @click="dialogConfirm = false">
-                        Cancel
-                    </v-btn>
-                    <v-btn color="blue darken-1" text @click="deleteData">
-                        Yes
-                    </v-btn>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="dialogConfirm = false">
+                    Cancel
+                  </v-btn>
+                  <v-btn color="blue darken-1" text @click="reverseData">
+                    Yes
+                  </v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -194,10 +271,12 @@ export default {
       snackbar: false,
       error_message: '',
       color: '',
+      statusData: '',
       search: null,
       dialog: false,
       dialogConfirm: false,
       dialogTambah: false,
+      dialogAccept: false,
       headers: [
         {
           text: 'Nama Pegawai',
@@ -243,8 +322,15 @@ export default {
       if (this.inputType === 'Tambah') {
         this.dialogTambah = true
         this.save()
-      } else {
+      } else if (this.inputType === 'Ubah' || this.inputType === 'Accept') {
         this.update()
+      }
+    },
+    reverseData () {
+      if (this.statusData === 'Restore') {
+        this.restoreData()
+      } else {
+        this.deleteData()
       }
     },
     // read data pegawai
@@ -321,7 +407,7 @@ export default {
         alamat_pegawai: this.form.alamat_pegawai,
         email_pegawai: this.form.email_pegawai
       }
-      const url = this.$api + '/pegawai/' + this.editId
+      const url = this.$api + '/pegawai/selfNoPass/' + this.editId
       this.load = true
       this.$http.put(url, newData, {
         headers: {
@@ -367,8 +453,7 @@ export default {
         this.load = false
       })
     },
-    editHandler (item) {
-      this.inputType = 'Ubah'
+    ETAHandler (item) {
       this.editId = item.id
       this.form.nama_pegawai = item.nama_pegawai
       this.form.jenis_kelamin = item.jenis_kelamin
@@ -376,7 +461,16 @@ export default {
       this.form.jabatan_pegawai = item.jabatan_pegawai
       this.form.alamat_pegawai = item.alamat_pegawai
       this.form.email_pegawai = item.email_pegawai
+    },
+    editHandler (item) {
+      this.inputType = 'Ubah'
       this.dialog = true
+      this.ETAHandler(item)
+    },
+    acceptHandler  (item) {
+      this.inputType = 'Accept'
+      this.dialogAccept = true
+      this.ETAHandler(item)
     },
     deleteHandler (id) {
       this.deleteId = id
@@ -384,6 +478,7 @@ export default {
     },
     close () {
       this.dialog = false
+      this.dialogAccept = false
       this.dialogConfirm = false
       this.dialogTambah = false
       this.inputType = 'Tambah'
@@ -392,6 +487,7 @@ export default {
       this.resetForm()
       this.readData()
       this.dialog = false
+      this.dialogAccept = false
       this.dialogConfirm = false
       this.dialogTambah = false
       this.inputType = 'Tambah'
