@@ -1,4 +1,4 @@
-<template class="justify-center px-10">
+<template class="justify-center">
     <v-main class="list justify-center">
         <div class="d-flex justify-space-between ma-4">
           <div style="width:10%"></div>
@@ -95,7 +95,7 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="cancel">
+                <v-btn color="blue darken-1" text @click="close">
                     Cancel
                 </v-btn>
                 <v-btn color="blue darken-1" text @click="setForm(form.jumlah_menu)">
@@ -112,11 +112,16 @@
             <v-card-title>
               Pesanan Anda
             </v-card-title>
+            <v-form
+              ref="form"
+              v-model="valid"
+              lazy-validation>
             <v-text-field
               v-model="form.nama_pembeli"
               label="Nama Customer"
               required
               class="ma-8"
+              :rules="[(v) => !!v || 'Nama tidak boleh kosong']"
             ></v-text-field>
 
             <v-flex v-for="item in cart" :key="item.id">
@@ -168,17 +173,20 @@
                 </div>
               </v-card>
             </v-flex>
-            <!-- <v-data-table
-              :items="cart" :headers="cartHeaders">
-              <template v-slot:[`item.actions`]="{ item }">
-                <v-icon small class="mr-2" @click="tambahHandler(item.id, item)">
-                  mdi-pencil
-                </v-icon>
-                <v-icon small class="mr-2" @click="deleteHandler()">
-                  mdi-delete
-                </v-icon>
-              </template>
-            </v-data-table> -->
+            <br/>
+            <v-card-subtitle><b>Subtotal : {{ this.subtotal }}</b></v-card-subtitle>
+            <v-card-subtitle><b>Tax : {{ this.tax }}</b></v-card-subtitle>
+            <v-card-subtitle><b>Total Harga : {{ this.totalHarga }}</b></v-card-subtitle>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="close()">
+                    Cancel
+                </v-btn>
+                <v-btn color="blue darken-1" text @click="checkForm()">
+                    Pesan
+                </v-btn>
+            </v-card-actions>
+            </v-form>
           </v-card>
         </v-dialog>
 
@@ -192,7 +200,7 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer></v-spacer>
-                  <v-btn color="blue darken-1" text @click="cancel">
+                  <v-btn color="blue darken-1" text @click="close()">
                     Cancel
                   </v-btn>
                   <v-btn color="blue darken-1" text @click="deleteHandler()">
@@ -221,6 +229,7 @@ export default {
       err_jumlah: 'Jumlah harus lebih dari 0',
       color: '',
       showed: '',
+      valid: false,
       search: null,
       dialog: false,
       dialogConfirm: false,
@@ -258,8 +267,11 @@ export default {
         'Non-Kopi',
         'Makanan'
       ],
-      menu: new FormData(),
+      pesanan: new FormData(),
+      detailPesanan: new FormData(),
       menus: [],
+      detailPesanans: [],
+      pesanans: [],
       cart: [],
       form: {
         nama_pembeli: null,
@@ -270,10 +282,25 @@ export default {
         jenis_menu: null,
         jumlah_menu: 0
       },
+      tampungForm: [],
+      tampungId: [
+        {
+          id_menu: 0
+        }
+      ],
+      id_pesanan: null,
+      subtotal: 0,
+      tax: 0,
+      totalHarga: 0,
       deleteId: '',
       editId: '',
       tambahId: '',
-      uploadNama_menu: ''
+      uploadNama_menu: '',
+      date: new Date(),
+      day: null,
+      month: null,
+      year: null,
+      currentDate: null
     }
   },
   methods: {
@@ -286,13 +313,24 @@ export default {
         console.log(this.cart)
       })
     },
-    // read not deleted
-    searchMenu (name) {
-      const url = this.$api + '/customer/search=' + name
+    async readPesanan () {
+      const url = this.$api + '/getPesanan'
       this.$http.get(url, {
       }).then(response => {
-        this.menus = response.data.data
+        this.pesanans = response.data.data
+        console.log(this.pesanans)
       })
+    },
+    searchMenu (name) {
+      if (name === null || name === '') {
+        this.readData()
+      } else {
+        const url = this.$api + '/customer/search=' + name
+        this.$http.get(url, {
+        }).then(response => {
+          this.menus = response.data.data
+        })
+      }
     },
     showPic (menu) {
       if (!(menu.foto_menu === null)) {
@@ -306,6 +344,13 @@ export default {
         item.jumlah_menu = item.jumlah_menu + 1
       } else if (value === 'Kurang' && item.jumlah_menu > 0) {
         item.jumlah_menu = item.jumlah_menu - 1
+      }
+    },
+    checkForm () {
+      if (this.$refs.form.validate()) {
+        if (this.form.nama_pembeli) {
+          return this.savePesanan()
+        }
       }
     },
     setForm (jumlah) {
@@ -332,45 +377,50 @@ export default {
         }
       }
     },
-    // simpan data produk
-    save () {
-      this.menu.append('nama_menu', this.form.nama_menu)
-      this.menu.append('harga_menu', this.form.harga_menu)
-      this.menu.append('deskripsi_menu', this.form.deskripsi_menu)
-      this.menu.append('jenis_menu', this.form.jenis_menu)
-
-      const url = this.$api + '/pesanan'
-      this.load = true
-      this.$http.post(url, this.menu, {
-        headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
-        }
-      }).then(response => {
-        this.error_message = response.data.message
-        this.color = 'green'
-        this.snackbar = true
-        this.load = false
-        this.close()
-        this.readData() // mengambil data
-        this.resetForm()
-      }).catch(error => {
-        this.error_message = error.response.data.message
-        this.color = 'red'
-        this.snackbar = true
-        this.load = false
-      })
-    },
-    // ubah data produk
-    update () {
-      const newData = {
-        nama_menu: this.form.nama_menu,
-        harga_menu: this.form.harga_menu,
-        deskripsi_menu: this.form.deskripsi_menu,
-        jenis_menu: this.form.jenis_menu
+    sumSubtotal () {
+      for (let j = 0; j < this.cart.length; j++) {
+        this.subtotal += (this.cart[j].harga_menu * this.cart[j].jumlah_menu)
       }
-      const url = this.$api + '/menu/' + this.editId
+      this.tax = this.subtotal / 10
+      this.totalHarga = this.subtotal + this.tax
+    },
+    async searchIdPesanan () {
+      for (let i = 0; i < this.pesanans.length; i++) {
+        if (this.pesanans[i].nama_pembeli === this.form.nama_pembeli) {
+          this.id_pesanan = this.pesanans[i].id
+        }
+      }
+    },
+    async copyIdMenuAndIdPesanan () {
+      await this.searchIdPesanan()
+      for (let j = 0; j < this.cart.length; j++) {
+        for (let k = 0; k < this.menus.length; k++) {
+          if (this.cart[j].nama_menu === this.menus[k].nama_menu) {
+            this.tampungForm.push(this.cart[j].jumlah_menu)
+            this.tampungForm.push(this.id_pesanan)
+            this.tampungForm.push(this.menus[k].id)
+          }
+        }
+      }
+      this.detailPesanan.append('data', JSON.stringify(this.tampungForm))
+      console.log(this.detailPesanan)
+      console.log(this.tampungForm)
+    },
+    Async () {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve()
+        }, 2000)
+      })
+    },
+    // simpan data produk
+    async savePesanan () {
+      this.pesanan.append('nama_pembeli', this.form.nama_pembeli)
+      this.pesanan.append('subtotal', this.subtotal)
+
+      const url = this.$api + '/simpanPesanan'
       this.load = true
-      this.$http.put(url, newData, {
+      await this.$http.post(url, this.pesanan, {
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('token')
         }
@@ -380,32 +430,32 @@ export default {
         this.snackbar = true
         this.load = false
         this.close()
-        this.readData() // mengambil data
-        this.resetForm()
-        this.inputType = 'Tambah'
+        this.readPesanan()
+        // this.saveDetailPesanan()
+        // this.resetForm()
       }).catch(error => {
         this.error_message = error.response.data.message
         this.color = 'red'
         this.snackbar = true
         this.load = false
       })
+      await this.Async()
+      this.saveDetailPesanan()
     },
-    // restore data produk
-    restoreData () {
-      const url = this.$api + '/menu/restore/' + this.deletedId
-      this.$http.put(url, {
-        headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
-        }
+    async saveDetailPesanan () {
+      await this.copyIdMenuAndIdPesanan()
+      const url = this.$api + '/detailPesanan'
+      this.load = true
+      this.$http.post(url, this.detailPesanan, {
       }).then(response => {
         this.error_message = response.data.message
         this.color = 'green'
         this.snackbar = true
         this.load = false
         this.close()
-        this.readData() // mengambil data
+        this.readData()
         this.resetForm()
-        this.inputType = 'Tambah'
+        this.cart = []
       }).catch(error => {
         this.error_message = error.response.data.message
         this.color = 'red'
@@ -422,6 +472,7 @@ export default {
     },
     cartHandler () {
       this.dialogCart = true
+      this.sumSubtotal()
     },
     editHandler (item) {
       this.inputType = 'Ubah'
@@ -446,20 +497,28 @@ export default {
       this.cancel()
     },
     close () {
+      this.subtotal = 0
+      this.tax = 0
+      this.totalHarga = 0
       this.dialog = false
       this.dialogConfirm = false
       this.dialogTambah = false
       this.dialogUpload = false
+      this.dialogCart = false
       this.inputType = 'Tambah'
       this.tambahId = ''
     },
     cancel () {
       this.resetForm()
       this.readData()
+      this.subtotal = 0
+      this.tax = 0
+      this.totalHarga = 0
       this.dialog = false
       this.dialogConfirm = false
       this.dialogUpload = false
       this.dialogTambah = false
+      this.dialogCart = false
       this.inputType = 'Tambah'
       this.tambahId = ''
     },
@@ -483,6 +542,16 @@ export default {
   },
   mounted () {
     this.readData()
+    // this.day = this.date.getDate()
+    this.day = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(this.date)
+    this.month = this.date.getMonth() + 1
+    this.year = this.date.getFullYear()
+    this.currentDate = `${this.year}-${this.month}-${this.day}`
+    this.readPesanan()
+    this.searchIdPesanan()
+    console.log(this.currentDate)
+    console.log(this.pesanans)
+    console.log(this.id_pesanan)
   }
 }
 </script>
