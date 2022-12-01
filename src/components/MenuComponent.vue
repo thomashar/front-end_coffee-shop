@@ -292,7 +292,7 @@ export default {
       const url = this.$api + '/menu'
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.menus = response.data.data
@@ -303,7 +303,7 @@ export default {
       const url = this.$api + '/menuNotDeleted'
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.menus = response.data.data
@@ -314,7 +314,7 @@ export default {
       const url = this.$api + '/menuDeleted'
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.menus = response.data.data
@@ -325,7 +325,7 @@ export default {
       const url = this.$api + '/menuByName/' + searchName
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.menus = response.data.data
@@ -368,7 +368,7 @@ export default {
       this.load = true
       this.$http.post(url, this.menu, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message
@@ -400,7 +400,7 @@ export default {
       const url = this.$api + '/menu/upimg/' + this.uploadId
       this.$http.post(url, this.menu, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message
@@ -430,7 +430,7 @@ export default {
       this.load = true
       this.$http.put(url, this.menu, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message
@@ -454,7 +454,7 @@ export default {
       this.load = true
       this.$http.put(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message
@@ -477,7 +477,7 @@ export default {
       const url = this.$api + '/menu/restore/' + this.deletedId
       this.$http.put(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message

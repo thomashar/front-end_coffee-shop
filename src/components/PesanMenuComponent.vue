@@ -1,11 +1,11 @@
 <template class="justify-center">
     <v-main class="list justify-center">
-        <div class="d-flex justify-space-between ma-4">
+        <div class="d-flex justify-space-between mt-4 pt-4">
           <div style="width:10%"></div>
           <h2 class="text-center">
             SIKafe
           </h2>
-          <v-icon class="d-flex" @click="cartHandler()">
+          <v-icon style="width:10%" class="d-flex" @click="cartHandler()">
             mdi-cart
           </v-icon>
         </div>
@@ -33,7 +33,7 @@
               <div class="col-3">
                 <v-img
                   :src='showPic(item)'
-                  class="fotoMenu"
+                  class="fotoMenu alignHorizontal"
                 />
               </div>
               <div class="col-9">
@@ -133,7 +133,7 @@
                   <div class="col-3">
                     <v-img
                       :src='showPic(item)'
-                      class="fotoMenu"
+                      class="fotoMenu alignHorizontal"
                     />
                   </div>
                   <div class="col-3 d-flex ma-auto pa-auto">
@@ -190,6 +190,144 @@
           </v-card>
         </v-dialog>
 
+        <v-dialog v-model="dialogNota"
+          persistent
+          fullscreen>
+          <v-card>
+            <v-container
+              class="pa-lg-12 pa-md-8 pa-sm-6 ma-auto"
+              max-width="60%"
+              height="100%">
+              <v-card-title class="d-flex justify-center align-center mb-8">
+                SIKafe
+              </v-card-title>
+                <v-list-item-title>
+                  <v-row class="mb-4 justify-center">
+                    <v-col
+                      cols="3"
+                      class="text-left">
+                      <b>Nama Pembeli</b>
+                    </v-col>
+                    <v-col
+                      cols="3"
+                      class="text-right">
+                      <b>{{ form.nama_pembeli }}</b>
+                    </v-col>
+                  </v-row>
+                  <v-row class="mb-4 justify-center">
+                    <v-col
+                      cols="3"
+                      class="text-left">
+                      <b>Tanggal Transaksi</b>
+                    </v-col>
+                    <v-col
+                      cols="3"
+                      class="text-right">
+                      <b>{{ this.tanggalIni }}</b>
+                    </v-col>
+                  </v-row>
+                </v-list-item-title>
+              <v-divider class="d-flex justify-center mx-auto" width="55%"></v-divider>
+              <v-flex v-for="item in cart" :key="item.id">
+                <div class="row justify-center">
+                  <div class="col-3">
+                    <v-list-item-content class="text-left">
+                      <v-list-item-title>
+                        <b>{{ item.nama_menu }}</b><br/><br/>
+                        <b>x {{ item.jumlah_menu }}</b>
+                      </v-list-item-title>
+                    </v-list-item-content>
+                  </div>
+                  <div class="col-3">
+                    <v-list-item-title class="text-right pt-2">
+                        <b>Rp. {{ item.harga_menu * item.jumlah_menu }}</b>
+                    </v-list-item-title>
+                  </div>
+                </div>
+              </v-flex>
+              <v-divider class="d-flex justify-center mx-auto mt-2" width="55%"></v-divider>
+              <v-list-item-title class="my-4">
+                <v-row class="justify-center">
+                  <v-col
+                    cols="3"
+                    class="text-left">
+                    <b>Subtotal</b>
+                  </v-col>
+                  <v-col
+                    cols="3"
+                    class="text-right">
+                    <b>{{ this.subtotal }}</b>
+                  </v-col>
+                </v-row>
+                <v-row class="justify-center">
+                  <v-col
+                    cols="3"
+                    class="text-left">
+                    <b>Tax</b>
+                  </v-col>
+                  <v-col
+                    cols="3"
+                    class="text-right">
+                    <b>{{ this.tax }}</b>
+                  </v-col>
+                </v-row>
+                <v-row class="justify-center">
+                  <v-col
+                    cols="3"
+                    class="text-left">
+                    <b>Total Harga</b>
+                  </v-col>
+                  <v-col
+                    cols="3"
+                    class="text-right">
+                    <b>{{ this.totalHarga }}</b>
+                  </v-col>
+                </v-row>
+              </v-list-item-title>
+              <div class="d-flex justify-center align-end pb-8">
+                <v-btn color="success" @click="cancel()">Kembali ke Menu Utama</v-btn>
+              </div>
+            </v-container>
+          </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="dialogLoading"
+          persistent
+          fullscreen
+          hide-overlay>
+          <v-container
+            fluid
+            fill-height
+            style="background-color: black; opacity: 40%">
+            <v-progress-circular
+              indeterminate
+              color="primary"
+              class="d-flex justify-center align-center ma-auto"
+            ></v-progress-circular>
+          </v-container>
+        </v-dialog>
+
+        <v-dialog v-model="dialogBeforePayment"
+          persistent
+          fullscreen
+          hide-overlay
+          style="background-color: white">
+          <v-card fill-height class="d-flex justify-center align-center alignVertical">
+            <v-row>
+              <v-col>
+                <v-icon size="75" class="d-flex justify-center align-center" color="green">
+                  mdi-check-circle
+                </v-icon>
+                <br>
+                <p
+                  class="d-flex justify-center text-center text-h6">
+                  Pemesanan Berhasil.<br>Mohon untuk melakukan pembayaran di kasir
+                </p>
+              </v-col>
+            </v-row>
+          </v-card>
+        </v-dialog>
+
         <v-dialog v-model="dialogConfirm" persistent max-width="400px">
             <v-card>
                 <v-card-title>
@@ -235,6 +373,9 @@ export default {
       dialogConfirm: false,
       dialogTambah: false,
       dialogCart: false,
+      dialogNota: false,
+      dialogLoading: false,
+      dialogBeforePayment: false,
       headers: [
         {
           text: 'Nama Menu',
@@ -269,9 +410,11 @@ export default {
       ],
       pesanan: new FormData(),
       detailPesanan: new FormData(),
+      transaksi: new FormData(),
       menus: [],
       detailPesanans: [],
       pesanans: [],
+      transaksis: [],
       cart: [],
       form: {
         nama_pembeli: null,
@@ -288,6 +431,7 @@ export default {
           id_menu: 0
         }
       ],
+      tampungFull: [[], [], []],
       id_pesanan: null,
       subtotal: 0,
       tax: 0,
@@ -300,7 +444,8 @@ export default {
       day: null,
       month: null,
       year: null,
-      currentDate: null
+      currentDate: null,
+      tanggalIni: null
     }
   },
   methods: {
@@ -319,6 +464,14 @@ export default {
       }).then(response => {
         this.pesanans = response.data.data
         console.log(this.pesanans)
+      })
+    },
+    readTransaksi () {
+      const url = this.$api + '/getTransaksi/' + this.id_pesanan
+      this.$http.get(url, {
+      }).then(response => {
+        this.transaksis = response.data.data
+        console.log(this.transaksis)
       })
     },
     searchMenu (name) {
@@ -377,6 +530,19 @@ export default {
         }
       }
     },
+    async waitForPayment () {
+      this.dialogLoading = false
+      this.dialogBeforePayment = true
+      do {
+        this.readTransaksi()
+        await this.Async()
+        await this.Async()
+      }
+      while (this.transaksis[0].status_pembayaran === 0)
+      this.tanggalIni = this.transaksis[0].tanggal_transaksi
+      this.dialogBeforePayment = false
+      this.dialogNota = true
+    },
     sumSubtotal () {
       for (let j = 0; j < this.cart.length; j++) {
         this.subtotal += (this.cart[j].harga_menu * this.cart[j].jumlah_menu)
@@ -410,11 +576,12 @@ export default {
       return new Promise((resolve) => {
         setTimeout(() => {
           resolve()
-        }, 2000)
+        }, 2500)
       })
     },
     // simpan data produk
     async savePesanan () {
+      this.dialogLoading = true
       this.pesanan.append('nama_pembeli', this.form.nama_pembeli)
       this.pesanan.append('subtotal', this.subtotal)
 
@@ -422,14 +589,13 @@ export default {
       this.load = true
       await this.$http.post(url, this.pesanan, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
-        this.error_message = response.data.message
-        this.color = 'green'
-        this.snackbar = true
+        // this.error_message = response.data.message
+        // this.color = 'green'
+        // this.snackbar = true
         this.load = false
-        this.close()
         this.readPesanan()
         // this.saveDetailPesanan()
         // this.resetForm()
@@ -448,20 +614,43 @@ export default {
       this.load = true
       this.$http.post(url, this.detailPesanan, {
       }).then(response => {
-        this.error_message = response.data.message
-        this.color = 'green'
-        this.snackbar = true
+        // this.error_message = response.data.message
+        // this.color = 'green'
+        // this.snackbar = true
         this.load = false
-        this.close()
-        this.readData()
-        this.resetForm()
-        this.cart = []
       }).catch(error => {
         this.error_message = error.response.data.message
         this.color = 'red'
         this.snackbar = true
         this.load = false
       })
+      await this.Async()
+      this.saveTransaksi()
+    },
+    async saveTransaksi () {
+      this.transaksi.append('total_harga', this.totalHarga)
+      this.transaksi.append('id_pesanan', this.id_pesanan)
+
+      const url = this.$api + '/simpanTransaksi'
+      this.load = true
+      await this.$http.post(url, this.transaksi, {
+      }).then(response => {
+        this.error_message = response.data.message
+        this.color = 'green'
+        this.snackbar = true
+        this.load = false
+      }).catch(error => {
+        this.error_message = error.response.data.message
+        this.color = 'red'
+        this.snackbar = true
+        this.load = false
+      })
+      this.dialogLoading = true
+      this.waitForPayment()
+      // this.close()
+      // this.readData()
+      // this.resetForm()
+      // this.cart = []
     },
     ETHandler (item) {
       this.form.nama_menu = item.nama_menu
@@ -505,6 +694,7 @@ export default {
       this.dialogTambah = false
       this.dialogUpload = false
       this.dialogCart = false
+      this.dialogNota = false
       this.inputType = 'Tambah'
       this.tambahId = ''
     },
@@ -519,6 +709,7 @@ export default {
       this.dialogUpload = false
       this.dialogTambah = false
       this.dialogCart = false
+      this.dialogNota = false
       this.inputType = 'Tambah'
       this.tambahId = ''
     },
@@ -552,6 +743,7 @@ export default {
     console.log(this.currentDate)
     console.log(this.pesanans)
     console.log(this.id_pesanan)
+    this.dialogNota = true
   }
 }
 </script>
@@ -560,14 +752,18 @@ export default {
   height: 128px;
   width: 128px;
   min-width: 50px;
-  margin-left: auto;
-  margin-right: auto;
   display: block;
 }
 .cardMenu {
   max-width: 80%;
+  display: block;
+}
+.alignHorizontal {
   margin-left: auto;
   margin-right: auto;
-  display: block;
+}
+.alignVertical {
+  margin-top: auto;
+  margin-bottom: auto;
 }
 </style>

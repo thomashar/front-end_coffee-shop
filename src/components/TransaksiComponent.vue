@@ -3,36 +3,44 @@
         <h3 class="text-h3 font-weight-medium mb-5"> Transaksi </h3>
 
         <v-card>
-            <v-card-title>
-            <v-text-field
-                v-model="search"
-                append-icon="mdi-magnify"
-                label="Search"
-                single-line
-                hide-details
-                @keydown.enter="readNamaPembeli(search)"
-            ></v-text-field>
-            <v-spacer></v-spacer>
-              <v-btn color="success" dark @click="tambahHandler()">
-                  Tambah
-              </v-btn>
-            </v-card-title>
-            <v-data-table :headers="headers" :items="transaksis" :search="search" >
-                <template v-slot:[`item.actions`]="{ item }">
-                    <v-icon small class="mr-2" @click="bayarHandler(item)">
-                        mdi-cash
-                    </v-icon>
-                    <v-icon small class="mr-2" @click="editHandler(item)">
-                        mdi-pencil
-                    </v-icon>
-                    <v-icon v-if="item.is_Deleted === 0" small class="mr-2" @click="deleteHandler(item.id)">
-                        mdi-delete
-                    </v-icon>
-                    <v-icon v-else-if="item.is_Deleted === 1" small class="mr-2" @click="restoreHandler(item.id)">
-                        mdi-restore
-                    </v-icon>
-                </template>
-            </v-data-table>
+          <v-card-title>
+          <v-text-field
+              v-model="search"
+              append-icon="mdi-magnify"
+              label="Search"
+              single-line
+              hide-details
+              @keydown.enter="readNamaPembeli(search)"
+          ></v-text-field>
+          <v-spacer></v-spacer>
+            <v-btn color="success" dark @click="tambahHandler()">
+                Tambah
+            </v-btn>
+          </v-card-title>
+          <v-data-table :headers="headers" :items="transaksisComp" :search="search" >
+            <template v-slot:[`item.status_pembayaran`]="{ item }">
+              <v-list-item-action-text v-if="item.status_pembayaran === 0" class="mr-2">
+                  Menunggu Pembayaran
+              </v-list-item-action-text>
+              <v-list-item-action-text v-else-if="item.status_pembayaran === 1" class="mr-2">
+                  Sudah Lunas
+              </v-list-item-action-text>
+            </template>
+            <template v-slot:[`item.actions`]="{ item }">
+                <v-icon small class="mr-2" @click="bayarHandler(item)">
+                    mdi-cash
+                </v-icon>
+                <v-icon small class="mr-2" @click="editHandler(item)">
+                    mdi-pencil
+                </v-icon>
+                <v-icon v-if="item.is_Deleted === 0" small class="mr-2" @click="deleteHandler(item.id)">
+                    mdi-delete
+                </v-icon>
+                <v-icon v-else-if="item.is_Deleted === 1" small class="mr-2" @click="restoreHandler(item.id)">
+                    mdi-restore
+                </v-icon>
+            </template>
+          </v-data-table>
         </v-card>
 
         <v-dialog v-model="dialog" persistent max-width="600px">
@@ -137,9 +145,16 @@
                                   md="3"
                                   >
                                   <v-card-text
+                                    v-if="inputType === 'Ubah'"
                                     class="text-align-center ml-1"
                                     >
                                     {{form.jumlah_menu}}
+                                  </v-card-text>
+                                  <v-card-text
+                                    v-else-if="inputType === 'Bayar'"
+                                    class="text-align-center ml-1"
+                                    >
+                                    {{pesanans.jumlah_menu}}
                                   </v-card-text>
                                 </v-col>
                                 <v-col
@@ -234,6 +249,7 @@ export default {
         },
         { text: 'Tanggal Transaksi', value: 'tanggal_transaksi' },
         { text: 'Total Harga', value: 'total_harga' },
+        { text: 'Status Pembayaran', value: 'status_pembayaran' },
         { text: 'Actions', value: 'actions' }
       ],
       detailpesan: [
@@ -244,11 +260,11 @@ export default {
           value: 'nama_menu'
         },
         { text: 'Harga Menu', value: 'harga_menu' },
-        { text: 'Jumlah', value: 'Jumlah' }
+        { text: 'Jumlah', value: 'jumlah_menu' }
       ],
       jumlahCounter: [],
       transaksi: new FormData(),
-      transaksis: [],
+      transaksisComp: [],
       // pesanan: new FormData(),
       pesanans: [],
       // pegawai: new FormData(),
@@ -276,28 +292,29 @@ export default {
       const url = this.$api + '/transaksi'
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
-        this.transaksis = response.data.data
+        this.transaksisComp = response.data.data
       })
     },
     // read data pesanan
     readDataPesanan () {
-      const url = this.$api + '/pesanan'
+      const url = this.$api + '/pesanan/' + this.bayarId
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.pesanans = response.data.data
+        console.log(this.pesanans)
       })
     },
     readDataMenu () {
       const url = this.$api + '/menuNotDeleted'
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.menus = response.data.data
@@ -308,7 +325,7 @@ export default {
       const url = this.$api + '/countMenu'
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.banyakMenu = response.data.data
@@ -321,7 +338,7 @@ export default {
     //   const url = this.$api + '/customer'
     //   this.$http.get(url, {
     //     headers: {
-    //       Authorization: 'Bearer ' + localStorage.getItem('token')
+    //       Authorization: 'Bearer ' + sessionStorage.getItem('token')
     //     }
     //   }).then(response => {
     //     this.customers = response.data.data
@@ -331,7 +348,7 @@ export default {
       const url = this.$api + '/pesananByName/' + searchName
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.transaksis = response.data.data
@@ -395,7 +412,28 @@ export default {
       this.form.total_harga = this.transaksi.tax + this.transaksi.subtotal
     },
     loginName () {
-      return localStorage.getItem('nama')
+      return sessionStorage.getItem('nama')
+    },
+    bayar () {
+      const url = this.$api + '/transaksiDone/' + this.bayarId + '/' + sessionStorage.getItem('id')
+      this.load = true
+      this.$http.put(url, this.transaksi, {
+        headers: {
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
+        }
+      }).then(response => {
+        this.error_message = response.data.message
+        this.color = 'green'
+        this.snackbar = true
+        this.load = false
+        this.close()
+        this.resetForm()
+      }).catch(error => {
+        this.error_message = error.response.data.message
+        this.color = 'red'
+        this.snackbar = true
+        this.load = false
+      })
     },
     // simpan data transaksi
     save () {
@@ -405,7 +443,7 @@ export default {
       this.load = true
       this.$http.post(url, this.transaksi, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message
@@ -433,7 +471,7 @@ export default {
       this.load = true
       this.$http.put(url, newData, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then().then(response => {
         this.error_message = response.data.message
@@ -456,7 +494,7 @@ export default {
       this.load = true
       this.$http.put(url, null, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message
@@ -481,14 +519,15 @@ export default {
     editHandler (item) {
       this.inputType = 'Ubah'
       this.editId = item.id
-      item.nama_pegawai = localStorage.getItem('nama')
+      item.nama_pegawai = sessionStorage.getItem('nama')
       this.BEHandler(item)
     },
     bayarHandler (item) {
       this.inputType = 'Bayar'
       this.bayarId = item.id
-      item.nama_pegawai = localStorage.getItem('nama')
+      item.nama_pegawai = sessionStorage.getItem('nama')
       this.BEHandler(item)
+      console.log(this.bayarId)
     },
     BEHandler (item) {
       this.form.nama_pembeli = item.nama_pembeli

@@ -113,22 +113,18 @@ export default {
   },
   methods: {
     logout () {
-      localStorage.removeItem('id')
-      localStorage.removeItem('token')
-      localStorage.removeItem('role')
-      localStorage.removeItem('nama')
-      localStorage.removeItem('foto')
-      //    console.log(localStorage.getItem('token'))
+      sessionStorage.clear()
+      sessionStorage.clear()
       this.$router.replace('/admin')
     },
     getrole () {
-      this.role = localStorage.getItem('role')
+      this.role = sessionStorage.getItem('role')
     },
     getnama () {
-      this.nama = localStorage.getItem('nama')
+      this.nama = sessionStorage.getItem('nama')
     },
     getid () {
-      this.id = localStorage.getItem('id')
+      this.id = sessionStorage.getItem('id')
     }
   },
   mounted () {

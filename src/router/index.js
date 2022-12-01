@@ -49,6 +49,12 @@ const routes = [
         name: 'resep',
         meta: { title: 'Resep' },
         component: importComponent('ResepComponent')
+      },
+      {
+        path: '/laporan',
+        name: 'Laporan',
+        meta: { title: 'Laporan' },
+        component: importComponent('LaporanComponent')
       }
       // {
       //   path: '/pembeli',
@@ -68,6 +74,12 @@ const routes = [
     name: 'Pesan Menu',
     meta: { title: 'Pesan Menu' },
     component: importComponent('PesanMenuComponent')
+  },
+  {
+    path: '/nota',
+    name: 'E-Nota',
+    meta: { title: 'E-Nota' },
+    component: importComponent('NotaComponent')
   }
 
   // route level code-splitting
@@ -84,7 +96,7 @@ const router = new VueRouter({
 //  Mengset harus login
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title
-  if (to.name !== 'login' && localStorage.getItem('token') === '') {
+  if (to.name !== 'login' && sessionStorage.getItem('token') === '') {
     return next({
       path: '/customer'
     })

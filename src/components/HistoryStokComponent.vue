@@ -200,7 +200,7 @@ export default {
       const url = this.$api + '/historystok'
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.stoks = response.data.data
@@ -211,7 +211,7 @@ export default {
       const url = this.$api + '/historystok/deleted'
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.stoks = response.data.data
@@ -252,7 +252,7 @@ export default {
       this.load = true
       this.$http.post(url, this.historyStok, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message
@@ -283,7 +283,7 @@ export default {
       this.load = true
       this.$http.put(url, newData, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message
@@ -307,7 +307,7 @@ export default {
       this.load = true
       this.$http.put(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message
@@ -330,7 +330,7 @@ export default {
       const url = this.$api + '/historystok/restore/' + this.deletedId
       this.$http.put(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message

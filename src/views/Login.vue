@@ -159,10 +159,10 @@ export default {
           email_pegawai: this.email_pegawai,
           password: this.password
         }).then(response => {
-          localStorage.setItem('id', response.data.pegawai.id) // menyimpan id pegawai yang sedang login
-          localStorage.setItem('token', response.data.access_token)
-          localStorage.setItem('role', response.data.pegawai.jabatan_pegawai)
-          localStorage.setItem('nama', response.data.pegawai.nama_pegawai)
+          sessionStorage.setItem('id', response.data.pegawai.id) // menyimpan id pegawai yang sedang login
+          sessionStorage.setItem('token', response.data.access_token)
+          sessionStorage.setItem('role', response.data.pegawai.jabatan_pegawai)
+          sessionStorage.setItem('nama', response.data.pegawai.nama_pegawai)
           // menyimpan auth token
           if (response.data.pegawai.delete_pegawai !== 1) {
             this.error_message = response.data.message
@@ -178,7 +178,7 @@ export default {
           this.error_message = error.response.data.message
           this.color = 'red'
           this.snackbar = true
-          localStorage.removeItem('token')
+          sessionStorage.removeItem('token')
           this.load = false
         })
       }
@@ -195,7 +195,7 @@ export default {
       this.load = true
       this.$http.post(url, this.pegawai, {
         // headers: {
-        //   Authorization: 'Bearer ' + localStorage.getItem('token')
+        //   Authorization: 'Bearer ' + sessionStorage.getItem('token')
         // }
       }).then(response => {
         this.error_message = response.data.message

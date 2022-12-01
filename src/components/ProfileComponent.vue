@@ -148,10 +148,10 @@ export default {
     //     console.log(this.pegawais)
     // },
     readData () {
-      const url = this.$api + '/pegawai/' + localStorage.getItem('id')
+      const url = this.$api + '/pegawai/' + sessionStorage.getItem('id')
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.pegawais = response.data.data
@@ -164,10 +164,10 @@ export default {
     },
     saveFoto (file) {
       this.pegawai.append('foto_pegawai', file)
-      const selfFoto = this.$api + '/pegawai/selfFoto/' + localStorage.getItem('id')
+      const selfFoto = this.$api + '/pegawai/selfFoto/' + sessionStorage.getItem('id')
       this.$http.post(selfFoto, this.pegawai, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message
@@ -232,10 +232,10 @@ export default {
           jabatan_pegawai: this.pegawais.jabatan_pegawai
         }
 
-        const urlNoPass = this.$api + '/pegawai/selfNoPass/' + localStorage.getItem('id')
+        const urlNoPass = this.$api + '/pegawai/selfNoPass/' + sessionStorage.getItem('id')
         this.$http.put(urlNoPass, userdata, {
           headers: {
-            Authorization: 'Bearer ' + localStorage.getItem('token')
+            Authorization: 'Bearer ' + sessionStorage.getItem('token')
           }
         }).then(response => {
           this.error_message = response.data.message
@@ -265,10 +265,10 @@ export default {
           password: this.new_pass_con
         }
 
-        const url = this.$api + '/pegawai/self/' + localStorage.getItem('id')
+        const url = this.$api + '/pegawai/self/' + sessionStorage.getItem('id')
         this.$http.put(url, userdata, {
           headers: {
-            Authorization: 'Bearer ' + localStorage.getItem('token')
+            Authorization: 'Bearer ' + sessionStorage.getItem('token')
           }
         }).then(response => {
           this.error_message = response.data.message

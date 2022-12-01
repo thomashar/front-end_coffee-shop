@@ -2,7 +2,7 @@
     <v-main class="list">
         <h3 class="text-h3 font-weight-medium mb-5"> Pegawai </h3>
 
-        <h5 class="pa-4"> Pegawai mendaftar : </h5>
+        <h5 class="pa-4 ma-4"> Pegawai mendaftar : </h5>
         <v-row>
           <v-col v-for="calon in pegawaiMendaftars" :key="calon.id">
             <v-card class="text-xs ma-4 cards pa-2" @click="acceptHandler(calon)"
@@ -238,10 +238,10 @@
                   <span class="headline">Warning!!!</span>
                 </v-card-title>
                 <v-card-text v-if="statusData === 'Hapus'">
-                    Anda yakin ingin menghapus transaksi?
+                    Anda yakin ingin menghapus data pegawai?
                 </v-card-text>
                 <v-card-text v-else-if="statusData === 'Restore'">
-                    Anda yakin ingin memulihkan transaksi?
+                    Anda yakin ingin memulihkan data pegawai?
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer></v-spacer>
@@ -338,7 +338,7 @@ export default {
       const url = this.$api + '/pegawai'
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.pegawais = response.data.data
@@ -349,7 +349,7 @@ export default {
       const url = this.$api + '/pegawaiMendaftar'
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.pegawaiMendaftars = response.data.data
@@ -360,7 +360,7 @@ export default {
       const url = this.$api + '/pegawaiByName/' + searchName
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.pegawais = response.data.data
@@ -380,7 +380,7 @@ export default {
       this.load = true
       this.$http.post(url, this.pegawai, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message
@@ -411,7 +411,7 @@ export default {
       this.load = true
       this.$http.put(url, newData, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message
@@ -435,7 +435,7 @@ export default {
       this.load = true
       this.$http.get(url, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
       }).then(response => {
         this.error_message = response.data.message
@@ -473,6 +473,12 @@ export default {
       this.ETAHandler(item)
     },
     deleteHandler (id) {
+      this.statusData = 'Hapus'
+      this.deleteId = id
+      this.dialogConfirm = true
+    },
+    restoreHandler (id) {
+      this.statusData = 'Restore'
       this.deleteId = id
       this.dialogConfirm = true
     },
