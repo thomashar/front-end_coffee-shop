@@ -743,7 +743,6 @@ export default {
     console.log(this.currentDate)
     console.log(this.pesanans)
     console.log(this.id_pesanan)
-    this.dialogNota = true
   }
 }
 </script>
