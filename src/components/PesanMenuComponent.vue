@@ -30,16 +30,16 @@
                       background: '#ffffff'
                   }">
             <div class="row" @click="tambahHandler(item)">
-              <div class="col-3">
+              <div class="col-5">
                 <v-img
                   :src='showPic(item)'
                   class="fotoMenu alignHorizontal"
                 />
               </div>
-              <div class="col-9">
-                <v-list-item-content class="pa-2 mt-2">
+              <div class="col-7">
+                <v-list-item-content class="mt-2 flex-grow-0 flex-shrink-1">
                   <v-list-item-title> <b>{{ item.nama_menu }} &dash; Rp.{{ item.harga_menu }}</b></v-list-item-title>
-                  <v-list-item-subtitle >{{ item.deskripsi_menu }}</v-list-item-subtitle>
+                  <v-card-text class="mr-2 text-justify">{{ item.deskripsi_menu }}</v-card-text>
                 </v-list-item-content>
               </div>
             </div>
@@ -72,25 +72,26 @@
                     >
                     Jumlah :
                   </v-col>
+              </v-row>
+              <v-row>
                   <v-col
                     class="text-center d-flex justify-center"
                     style="font-size:20px"
                     >
-                    <v-icon medium class="mr-6" @click="countTemp('Tambah', form)">
-                      mdi-plus
+                    <v-icon v-if="form.jumlah_menu === 0" disable medium class="mr-6">
+                      mdi-minus
+                    </v-icon>
+                    <v-icon v-else-if="form.jumlah_menu === 1 && inputType === 'Ubah'" medium class="mr-6" @click="dialogConfirm = true">
+                      mdi-minus
+                    </v-icon>
+                    <v-icon v-else-if="form.jumlah_menu > 0" medium class="mr-6" @click="countTemp('Kurang', form)">
+                      mdi-minus
                     </v-icon>
                     {{ form.jumlah_menu }}
-                    <v-icon v-if="form.jumlah_menu === 0" disable medium class="ml-6">
-                      mdi-minus
-                    </v-icon>
-                    <v-icon v-else-if="form.jumlah_menu === 1 && inputType === 'Ubah'" medium class="ml-6" @click="dialogConfirm = true">
-                      mdi-minus
-                    </v-icon>
-                    <v-icon v-else-if="form.jumlah_menu > 0" medium class="ml-6" @click="countTemp('Kurang', form)">
-                      mdi-minus
+                    <v-icon medium class="ml-6" @click="countTemp('Tambah', form)">
+                      mdi-plus
                     </v-icon>
                   </v-col>
-                  <v-col></v-col>
               </v-row>
             </v-card-text>
             <v-card-actions>
@@ -750,7 +751,8 @@ export default {
 .fotoMenu {
   height: 128px;
   width: 128px;
-  min-width: 50px;
+  min-width: 100px;
+  min-height: 50px;
   display: block;
 }
 .cardMenu {
