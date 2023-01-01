@@ -96,10 +96,17 @@
                         ></v-select>
 
                         <v-text-field
+                            v-if="inputType === 'Tambah'"
                             v-model="form.password"
                             label="Password"
                             required
                         ></v-text-field>
+
+                        <!-- <v-text-field
+                            v-else-if="inputType === 'Ubah'"
+                            v-model="form.password"
+                            label="Password"
+                        ></v-text-field> -->
                     </v-container>
                 </v-card-text>
                 <v-card-actions>
@@ -429,11 +436,33 @@ export default {
         this.load = false
       })
     },
-    // soft delete data produk
+    acceptData () {
+      const url = this.$api + '/pegawai/status/' + this.editId
+      this.load = true
+      this.$http.put(url, {
+        headers: {
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
+        }
+      }).then(response => {
+        this.error_message = response.data.message
+        this.color = 'green'
+        this.snackbar = true
+        this.load = false
+        this.close()
+        this.readData() // mengambil data
+        this.resetForm()
+        this.inputType = 'Tambah'
+      }).catch(error => {
+        this.error_message = error.response.data.message
+        this.color = 'red'
+        this.snackbar = true
+        this.load = false
+      })
+    },
     deleteData () {
       const url = this.$api + '/pegawai/softDelete/' + this.deleteId
       this.load = true
-      this.$http.get(url, {
+      this.$http.put(url, {
         headers: {
           Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }

@@ -70,7 +70,7 @@ const routes = [
     component: Login
   },
   {
-    path: '/customer',
+    path: '/',
     name: 'Pesan Menu',
     meta: { title: 'Pesan Menu' },
     component: importComponent('PesanMenuComponent')
@@ -98,7 +98,7 @@ router.beforeEach((to, from, next) => {
   document.title = to.meta.title
   if (to.name !== 'login' && sessionStorage.getItem('token') === '') {
     return next({
-      path: '/customer'
+      path: '/'
     })
   }
   next()

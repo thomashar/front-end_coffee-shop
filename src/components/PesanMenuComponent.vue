@@ -96,7 +96,7 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="close">
+                <v-btn color="blue darken-1" text @click="dialogTambah=false">
                     Cancel
                 </v-btn>
                 <v-btn color="blue darken-1" text @click="setForm(form.jumlah_menu)">
@@ -457,6 +457,7 @@ export default {
       }).then(response => {
         this.menus = response.data.data
         console.log(this.cart)
+        console.log(this.form)
       })
     },
     async readPesanan () {
@@ -686,7 +687,7 @@ export default {
       }
       this.cancel()
     },
-    close () {
+    reset () {
       this.subtotal = 0
       this.tax = 0
       this.totalHarga = 0
@@ -699,20 +700,13 @@ export default {
       this.inputType = 'Tambah'
       this.tambahId = ''
     },
+    close () {
+      this.readData()
+      this.reset()
+    },
     cancel () {
       this.resetForm()
-      this.readData()
-      this.subtotal = 0
-      this.tax = 0
-      this.totalHarga = 0
-      this.dialog = false
-      this.dialogConfirm = false
-      this.dialogUpload = false
-      this.dialogTambah = false
-      this.dialogCart = false
-      this.dialogNota = false
-      this.inputType = 'Tambah'
-      this.tambahId = ''
+      this.close()
     },
     resetForm () {
       this.form = {

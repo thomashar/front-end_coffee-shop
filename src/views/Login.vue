@@ -202,7 +202,7 @@ export default {
         this.color = 'green'
         this.snackbar = true
         this.load = false
-        this.close()
+        this.cancel()
         this.readData() // mengambil data
         this.resetForm()
       }).catch(error => {

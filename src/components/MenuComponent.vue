@@ -269,7 +269,7 @@ export default {
         'Non-Kopi',
         'Makanan'
       ],
-      menu: new FormData(),
+      menu: [],
       menus: [],
       form: {
         nama_menu: null,
@@ -340,6 +340,7 @@ export default {
       if (this.inputType === 'Tambah') {
         this.save()
       } else {
+        console.log(this.editId)
         this.update()
       }
     },
@@ -421,10 +422,11 @@ export default {
 
     // ubah data produk
     update () {
-      this.menu.append('nama_menu', this.form.nama_menu)
-      this.menu.append('harga_menu', this.form.harga_menu)
-      this.menu.append('deskripsi_menu', this.form.deskripsi_menu)
-      this.menu.append('jenis_menu', this.form.jenis_menu)
+      this.menu.push(this.form.nama_menu)
+      this.menu.push(this.form.harga_menu)
+      this.menu.push(this.form.deskripsi_menu)
+      this.menu.push(this.form.jenis_menu)
+      console.log(this.menu)
 
       const url = this.$api + '/menu/' + this.editId
       this.load = true
