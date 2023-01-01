@@ -90,8 +90,6 @@ export default {
         { title: 'Profile', to: '/profile', icon: 'mdi-account' },
         { title: 'Pegawai', to: '/pegawai', icon: 'mdi-account-multiple' },
         { title: 'Menu', to: '/menu', icon: 'mdi-book-open-page-variant' },
-        // { title: 'History Stok', to: '/historystok', icon: 'mdi-package-variant-closed' },
-        // { title: 'Resep Menu', to: '/resep', icon: 'mdi-notebook' },
         { title: 'Transaksi', to: '/transaksi', icon: 'mdi-cash' },
         { title: 'Laporan', to: '/laporan', icon: 'mdi-chart-line' }
       ],
@@ -99,8 +97,6 @@ export default {
       itemsAdmin: [
         { title: 'Profile', to: '/profile', icon: 'mdi-account' },
         { title: 'Menu', to: '/menu', icon: 'mdi-book-open-page-variant' },
-        // { title: 'History Stok', to: '/historystok', icon: 'mdi-package-variant-closed' },
-        // { title: 'Resep Menu', to: '/resep', icon: 'mdi-notebook' },
         { title: 'Transaksi', to: '/transaksi', icon: 'mdi-cash' },
         { title: 'Laporan', to: '/laporan', icon: 'mdi-chart-line' }
       ],

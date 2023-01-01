@@ -21,12 +21,6 @@ const routes = [
         component: importComponent('ProfileComponent')
       },
       {
-        path: '/historystok',
-        name: 'history stok',
-        meta: { title: 'History Stok' },
-        component: importComponent('HistoryStokComponent')
-      },
-      {
         path: '/menu',
         name: 'menu',
         meta: { title: 'Menu' },
@@ -45,22 +39,11 @@ const routes = [
         component: importComponent('TransaksiComponent')
       },
       {
-        path: '/resep',
-        name: 'resep',
-        meta: { title: 'Resep' },
-        component: importComponent('ResepComponent')
-      },
-      {
         path: '/laporan',
         name: 'Laporan',
         meta: { title: 'Laporan' },
         component: importComponent('LaporanComponent')
       }
-      // {
-      //   path: '/pembeli',
-      //   name: 'pembeli',
-      //   component: importComponent('PegawaiComponent')
-      // }
     ]
   },
   {
