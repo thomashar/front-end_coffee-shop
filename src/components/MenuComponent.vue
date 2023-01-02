@@ -269,8 +269,9 @@ export default {
         'Non-Kopi',
         'Makanan'
       ],
-      menu: [],
+      menu: new FormData(),
       menus: [],
+      menuTemp: [],
       form: {
         nama_menu: null,
         harga_menu: null,
@@ -344,15 +345,6 @@ export default {
         this.update()
       }
     },
-    // checkMenu (showMenu) {
-    //   if (showMenu.value === 'Show All') {
-    //     this.readData()
-    //   } else if (showMenu.value === 'Show On Menu') {
-    //     this.readNotDeleted()
-    //   } else if (showMenu.value === 'Show Deleted') {
-    //     this.readDeleted()
-    //   }
-    // },
     checkInput () {
       if (this.pictTemp != null) {
         this.urlFoto = URL.createObjectURL(this.pictTemp)
@@ -386,16 +378,6 @@ export default {
         this.load = false
       })
     },
-
-    // imageChanged (e) {
-    //   console.log(e.target.files[0])
-    //   const fileReader = new FileReader()
-    //   fileReader.readAsDataURL(e.target.files[0])
-
-    //   fileReader.onload = (e) => {
-    //     this.foto_menu = e.target.result
-    //   }
-    // },
     uploadImg (file) {
       this.menu.append('foto_menu', file)
       const url = this.$api + '/menu/upimg/' + this.uploadId
@@ -422,15 +404,15 @@ export default {
 
     // ubah data produk
     update () {
-      this.menu.push(this.form.nama_menu)
-      this.menu.push(this.form.harga_menu)
-      this.menu.push(this.form.deskripsi_menu)
-      this.menu.push(this.form.jenis_menu)
+      this.menuTemp.push(this.form.nama_menu)
+      this.menuTemp.push(this.form.harga_menu)
+      this.menuTemp.push(this.form.deskripsi_menu)
+      this.menuTemp.push(this.form.jenis_menu)
       console.log(this.menu)
 
       const url = this.$api + '/menu/' + this.editId
       this.load = true
-      this.$http.put(url, this.menu, {
+      this.$http.put(url, this.menuTemp, {
         headers: {
           Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }

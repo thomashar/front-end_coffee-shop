@@ -537,31 +537,6 @@ export default {
         this.load = false
       })
     },
-    // simpan data transaksi
-    save () {
-      this.transaksi.append('tanggal_transaksi', this.form.tanggal_transaksi)
-
-      const url = this.$api + '/transaksi'
-      this.load = true
-      this.$http.post(url, this.transaksi, {
-        headers: {
-          Authorization: 'Bearer ' + sessionStorage.getItem('token')
-        }
-      }).then(response => {
-        this.error_message = response.data.message
-        this.color = 'green'
-        this.snackbar = true
-        this.load = false
-        this.close()
-        this.readData()
-        this.resetForm()
-      }).catch(error => {
-        this.error_message = error.response.data.message
-        this.color = 'red'
-        this.snackbar = true
-        this.load = false
-      })
-    },
     async increaseDP () {
       this.countSubTotal()
       // this.countTax()
@@ -648,11 +623,6 @@ export default {
         this.load = false
       })
     },
-    // SQLSTATE[22007]: Invalid datetime format: 1366 Incorrect double value: 'NaN'
-    // for column `ta_9769`.`transaksis`.`total_harga`
-    // at row 1
-    // (SQL: update `transaksis` set `total_harga` = NaN,
-    // `transaksis`.`updated_at` = 2022-12-28 15:02:11 where `id` = 54)
     updateTransaksi () {
       this.transaksi.append('total_harga', this.form.total_harga)
       this.transaksi.append('tanggal_transaksi', this.form.tanggal_transaksi)
