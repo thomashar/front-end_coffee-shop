@@ -36,13 +36,12 @@
                     v-model="pegawais.hp_pegawai"
                     single-line
                 ></v-text-field>
-                <!-- <v-select
+                <v-text-field
                     class="mx-8"
-                    label="Jabatan"
-                    v-model="pegawais.jabatan_pegawai"
-                    :items="jabatans"
-                    :rules="[(v) => !!v || 'Jabatan tidak boleh kosong']"
-                ></v-select> -->
+                    label="Alamat"
+                    v-model="pegawais.alamat_pegawai"
+                    single-line
+                ></v-text-field>
                 <v-text-field
                     class="mx-8"
                     label="Email"
@@ -96,7 +95,7 @@
           </v-card>
         </v-dialog>
 
-        <v-snackbar v-model="snackbar" :color="color" timeout="2000" bottom>
+        <v-snackbar v-model="snackbar" :color="color" timeout="4000" bottom>
             {{error_message}}
         </v-snackbar>
     </v-main>
@@ -188,13 +187,12 @@ export default {
     Set the local file variable to what the user has selected.
     */
       this.editedItem.gambar = event.target.files[0]
-      console.log('di onfile change', this.editedItem.gambar)
       const reader = new FileReader()
       /*
-    Add an event listener to the reader that when the file
-    has been loaded, we flag the show preview as true and set the
-    image to be what was read from the reader.
-    */
+      Add an event listener to the reader that when the file
+      has been loaded, we flag the show preview as true and set the
+      image to be what was read from the reader.
+      */
       reader.addEventListener(
         'load',
         function () {
@@ -204,14 +202,13 @@ export default {
         false
       )
       /*
-    Check to see if the file is not empty.
-    */
+      Check to see if the file is not empty.
+      */
       if (this.editedItem.gambar) {
         /*
             Ensure the file is an image file.
         */
         if (/\.(jpe?g|png|gif)$/i.test(this.editedItem.gambar.name)) {
-          console.log('loader', this.editedItem.gambar)
           /*
             Fire the readAsDataURL method which will read the file in and
             upon completion fire a 'load' event which we will listen to and

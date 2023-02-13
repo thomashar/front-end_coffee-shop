@@ -27,7 +27,7 @@
                 label="Search"
                 single-line
                 hide-details
-                @keydown.enter="readNamaPegawai(search)"
+                @keydown.enter="searchMenu(search)"
             ></v-text-field>
             <v-spacer></v-spacer>
             <v-btn color="success" dark @click="dialog = true">
@@ -35,17 +35,28 @@
             </v-btn>
             </v-card-title>
             <v-data-table :headers="headers" :items="pegawais" :search="search">
-                <template v-slot:[`item.actions`]="{ item }">
-                  <v-icon small class="mr-2" @click="editHandler(item)">
-                      mdi-pencil
-                  </v-icon>
-                  <v-icon v-if="item.is_Deleted === 0" small class="mr-2" @click="deleteHandler(item.id)">
-                      mdi-delete
-                  </v-icon>
-                  <v-icon v-else-if="item.is_Deleted === 1" small class="mr-2" @click="restoreHandler(item.id)">
-                      mdi-restore
-                  </v-icon>
-                </template>
+              <template v-slot:[`item.status_pegawai`]="{ item }">
+                <v-card-text v-if="item.status_pegawai === '1'">
+                  Aktif
+                </v-card-text>
+                <v-card-text v-else-if="item.status_pegawai === '0'">
+                  Tidak Aktif
+                </v-card-text>
+                <v-card-text v-else-if="item.status_pegawai === '2'">
+                  Mendaftar
+                </v-card-text>
+              </template>
+              <template v-slot:[`item.actions`]="{ item }">
+                <v-icon small class="mr-2" @click="editHandler(item)">
+                    mdi-pencil
+                </v-icon>
+                <v-icon v-if="item.is_Deleted === '0'" small class="mr-2" @click="deleteHandler(item.id)">
+                    mdi-delete
+                </v-icon>
+                <v-icon v-else-if="item.is_Deleted === '1'" small class="mr-2" @click="restoreHandler(item.id)">
+                    mdi-restore
+                </v-icon>
+              </template>
             </v-data-table>
         </v-card>
 
@@ -102,14 +113,15 @@
                             required
                         ></v-text-field>
 
-                        <!-- <v-text-field
-                            v-else-if="inputType === 'Ubah'"
-                            v-model="form.password"
-                            label="Password"
-                        ></v-text-field> -->
                     </v-container>
                 </v-card-text>
                 <v-card-actions>
+                    <v-btn v-if="form.status_pegawai === '1'" color="red darken-1" text @click="acceptData">
+                        Non-Aktifan Pegawai
+                    </v-btn>
+                    <v-btn v-else-if="form.status_pegawai === '0'" color="green darken-1" text @click="acceptData">
+                        Aktifan Pegawai
+                    </v-btn>
                     <v-spacer></v-spacer>
                     <v-btn color="blue darken-1" text @click="cancel">
                         Cancel
@@ -180,65 +192,6 @@
             </v-card>
         </v-dialog>
 
-        <!-- <v-dialog v-model="dialog" persistent max-width="600px">
-            <v-card>
-                <v-card-title>
-                    <span class="headline">{{ formTitle }} Pegawai</span>
-                </v-card-title>
-                <v-card-text>
-                    <v-container>
-                        <v-text-field
-                            v-model="form.nama_pegawai"
-                            label="Nama Pegawai"
-                            required
-                        ></v-text-field>
-
-                        <v-select
-                            v-model="form.jenis_kelamin"
-                            :items="kelamins"
-                            label="Jenis kelamin"
-                            required
-                        ></v-select>
-
-                        <v-text-field
-                            v-model="form.hp_pegawai"
-                            label="HP"
-                            required
-                        ></v-text-field>
-
-                        <v-text-field
-                            v-model="form.alamat_pegawai"
-                            label="Alamat"
-                            required
-                        ></v-text-field>
-
-                        <v-text-field
-                            v-model="form.email_pegawai"
-                            label="Email"
-                            required
-                        ></v-text-field>
-
-                        <v-select
-                            v-model="form.jabatan_pegawai"
-                            :items="jabatans"
-                            :rules="[(v) => !!v || 'Jabatan tidak boleh kosong']"
-                            label="Jabatan"
-                            required
-                        ></v-select>
-                    </v-container>
-                </v-card-text>
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" text @click="cancel">
-                        Cancel
-                    </v-btn>
-                    <v-btn color="blue darken-1" text @click="setForm">
-                        Save
-                    </v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog> -->
-
         <v-dialog v-model="dialogConfirm" persistent max-width="400px">
             <v-card>
                 <v-card-title>
@@ -262,7 +215,7 @@
             </v-card>
         </v-dialog>
 
-        <v-snackbar v-model="snackbar" :color="color" timeout="2000" bottom>
+        <v-snackbar v-model="snackbar" :color="color" timeout="4000" bottom>
             {{error_message}}
         </v-snackbar>
     </v-main>
@@ -296,12 +249,12 @@ export default {
         { text: 'Alamat', value: 'alamat_pegawai' },
         { text: 'Email', value: 'email_pegawai' },
         { text: 'Jabatan', value: 'jabatan_pegawai' },
+        { text: 'Status', value: 'status_pegawai' },
         { text: 'Actions', value: 'actions' }
       ],
       jabatans: [
         'Pemilik',
         'Admin',
-        'Kasir',
         'Pegawai'
       ],
       kelamins: [
@@ -318,6 +271,7 @@ export default {
         alamat_pegawai: '',
         email_pegawai: '',
         jabatan_pegawai: '',
+        status_pegawai: '',
         password: ''
       },
       deleteId: '',
@@ -372,6 +326,13 @@ export default {
       }).then(response => {
         this.pegawais = response.data.data
       })
+    },
+    searchMenu (name) {
+      if (name === null || name === '') {
+        this.readData()
+      } else {
+        this.readNamaPegawai(name)
+      }
     },
     // simpan data produk
     save () {
@@ -439,7 +400,7 @@ export default {
     acceptData () {
       const url = this.$api + '/pegawai/status/' + this.editId
       this.load = true
-      this.$http.put(url, {
+      this.$http.put(url, null, {
         headers: {
           Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
@@ -462,7 +423,30 @@ export default {
     deleteData () {
       const url = this.$api + '/pegawai/softDelete/' + this.deleteId
       this.load = true
-      this.$http.put(url, {
+      this.$http.put(url, null, {
+        headers: {
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
+        }
+      }).then(response => {
+        this.error_message = response.data.message
+        this.color = 'green'
+        this.snackbar = true
+        this.load = false
+        this.close()
+        this.readData() // mengambil data
+        this.resetForm()
+        this.inputType = 'Tambah'
+      }).catch(error => {
+        this.error_message = error.response.data.message
+        this.color = 'red'
+        this.snackbar = true
+        this.load = false
+      })
+    },
+    restoreData () {
+      const url = this.$api + '/pegawai/restore/' + this.deleteId
+      this.load = true
+      this.$http.put(url, null, {
         headers: {
           Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
@@ -490,6 +474,7 @@ export default {
       this.form.jabatan_pegawai = item.jabatan_pegawai
       this.form.alamat_pegawai = item.alamat_pegawai
       this.form.email_pegawai = item.email_pegawai
+      this.form.status_pegawai = item.status_pegawai
     },
     editHandler (item) {
       this.inputType = 'Ubah'
@@ -535,8 +520,10 @@ export default {
         alamat_pegawai: null,
         email_pegawai: null,
         // password: null,
-        jabatan_pegawai: null
+        jabatan_pegawai: null,
+        status_pegawai: null
       }
+      this.pegawai = new FormData()
     }
   },
   computed: {

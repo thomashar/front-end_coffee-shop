@@ -126,7 +126,6 @@ export default {
       this.$http.get(url, {
       }).then(response => {
         this.pesanans = response.data.data
-        console.log(this.pesanans)
       })
     },
     goPesanMenu () {

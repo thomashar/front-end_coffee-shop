@@ -45,9 +45,9 @@
             </v-list-item>
         </v-list>
 
-        <v-list v-else-if="role == 'Kasir'" prominent nav dense>
+        <v-list v-else-if="role == 'Pegawai'" prominent nav dense>
             <v-list-item
-                v-for="item in itemsKasir"
+                v-for="item in itemsPegawai"
                 :key="item.title"
                 link
                 tag="router-link"
@@ -101,7 +101,7 @@ export default {
         { title: 'Laporan', to: '/laporan', icon: 'mdi-chart-line' }
       ],
 
-      itemsKasir: [
+      itemsPegawai: [
         { title: 'Profile', to: '/profile', icon: 'mdi-account' },
         { title: 'Transaksi', to: '/transaksi', icon: 'mdi-cash' }
       ]

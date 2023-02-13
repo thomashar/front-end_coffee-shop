@@ -10,7 +10,7 @@
               label="Search"
               single-line
               hide-details
-              @keydown.enter="readNamaPembeli(search)"
+              @keydown.enter="searchMenu(search)"
           ></v-text-field>
           <v-spacer></v-spacer>
             <v-btn color="success" dark @click="replaceUrl">
@@ -24,10 +24,10 @@
             :sort-by="headers.tanggal_transaksi"
             :sort-desc="true">
             <template v-slot:[`item.status_pembayaran`]="{ item }">
-              <v-list-item-action-text v-if="item.status_pembayaran === 0" class="mr-2">
+              <v-list-item-action-text v-if="item.status_pembayaran === '0'" class="mr-2">
                   Menunggu Pembayaran
               </v-list-item-action-text>
-              <v-list-item-action-text v-else-if="item.status_pembayaran === 1" class="mr-2">
+              <v-list-item-action-text v-else-if="item.status_pembayaran === '1'" class="mr-2">
                   Sudah Lunas
               </v-list-item-action-text>
             </template>
@@ -38,10 +38,10 @@
                 <v-icon small class="mr-2" @click="editHandler(item)">
                     mdi-pencil
                 </v-icon>
-                <v-icon v-if="item.is_Deleted_transaksi === 0" small class="mr-2" @click="deleteHandler(item)">
+                <v-icon v-if="item.is_Deleted_transaksi === '0'" small class="mr-2" @click="deleteHandler(item)">
                     mdi-delete
                 </v-icon>
-                <v-icon v-else-if="item.is_Deleted_transaksi === 1" small class="mr-2" @click="restoreHandler(item)">
+                <v-icon v-else-if="item.is_Deleted_transaksi === '1'" small class="mr-2" @click="restoreHandler(item)">
                     mdi-restore
                 </v-icon>
             </template>
@@ -53,103 +53,115 @@
                 <v-card-title>
                     <span class="headline">{{ formTitle }} Transaksi</span>
                 </v-card-title>
-                <v-card-text>
-                  <v-container v-if="inputType === 'Ubah' || inputType === 'Bayar'">
-                      <v-text-field
-                        v-model="form.nama_pembeli"
-                        label="Nama Pembeli"
-                        required>
-                      </v-text-field>
-                      <v-row>
-                        <v-col>
-                          <v-menu
-                              v-model="menu2"
-                              :close-on-content-click="false"
-                              :nudge-right="40"
-                              transition="scale-transition"
-                              offset-y
-                              min-width="auto"
-                          >
-                            <template v-slot:activator="{ on, attrs }">
-                              <v-text-field
-                                v-model="form.tanggal_transaksi"
-                                label="Tanggal Transaksi (YYYY-MM-DD)"
-                                prepend-icon="mdi-calendar"
-                                readonly
-                                v-bind="attrs"
-                                v-on="on"
-                              ></v-text-field>
-                            </template>
-                            <v-date-picker
-                                v-model="form.tanggal_transaksi"
-                                @input="menu2 = false"
-                            ></v-date-picker>
-                          </v-menu>
-                        </v-col>
-                        <v-col cols="3" v-if="this.inputType === 'Ubah'" >
-                          <v-btn color="success" dark @click="tambahDetailPesan()">
-                              Tambah
+                <v-container v-if="inputType === 'Ubah' || inputType === 'Bayar'">
+                    <v-text-field
+                      v-model="form.nama_pembeli"
+                      label="Nama Pembeli"
+                      required>
+                    </v-text-field>
+                    <v-row>
+                      <v-col>
+                        <v-menu
+                            v-model="menu2"
+                            :close-on-content-click="false"
+                            :nudge-right="40"
+                            transition="scale-transition"
+                            offset-y
+                            min-width="auto"
+                        >
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-text-field
+                              v-model="form.tanggal_transaksi"
+                              label="Tanggal Transaksi (YYYY-MM-DD)"
+                              prepend-icon="mdi-calendar"
+                              readonly
+                              v-bind="attrs"
+                              v-on="on"
+                            ></v-text-field>
+                          </template>
+                          <v-date-picker
+                              v-model="form.tanggal_transaksi"
+                              @input="menu2 = false"
+                          ></v-date-picker>
+                        </v-menu>
+                      </v-col>
+                      <v-col cols="3" v-if="this.inputType === 'Ubah'" >
+                        <v-btn color="success" dark @click="tambahDetailPesan()">
+                            Tambah
+                        </v-btn>
+                      </v-col>
+                    </v-row>
+
+                    <v-data-table
+                      v-if="inputType === 'Bayar'"
+                      :headers="detailpesan"
+                      :items="pesanans">
+                        <template v-slot:[`item.Jumlah`]>
+                          <v-row dense>
+                            <v-col
+                              cols="12"
+                              sm="4"
+                              md="3"
+                              >
+                              <v-card-text
+                                class="text-align-center ml-1"
+                                >
+                                {{pesanans.jumlah_menu}}
+                              </v-card-text>
+                            </v-col>
+                          </v-row>
+                        </template>
+                    </v-data-table>
+
+                    <v-data-table
+                      v-else-if="inputType === 'Ubah'"
+                      :headers="detailPesanEdit"
+                      :items="pesanans">
+                      <v-spacer></v-spacer>
+                        <template v-slot:[`item.Jumlah`]="{ item }">
+                          <v-row dense>
+                            <v-col
+                              cols="12"
+                              sm="4"
+                              md="3"
+                              >
+                              <v-card-text
+                                class="text-align-center ml-1"
+                                >
+                                {{item.jumlah_menu}}
+                              </v-card-text>
+                            </v-col>
+                          </v-row>
+                        </template>
+                        <template v-slot:[`item.actions`]="{ item }">
+                          <v-btn dense @click="editDetailpesan(item, item.id_menu, item.id_detailpesanan)">
+                            Edit
                           </v-btn>
-                        </v-col>
+                          <v-icon medium :color="'red'" class="mr-2 ml-2" @click="deleteDetailpesan(item)">
+                            mdi-delete
+                          </v-icon>
+                        </template>
+                    </v-data-table>
+
+                    <v-col>
+                      <b>
+                      <v-row class="justify-end">
+                        Subtotal : {{ form.subtotal_view }}
                       </v-row>
+                      <v-row class="justify-end">
+                        Tax : {{ form.tax_view }}
+                      </v-row>
+                      <v-row class="justify-end">
+                        Total : {{ form.total_harga_view }}
+                      </v-row>
+                      </b>
+                    </v-col>
 
-                      <v-data-table
-                        v-if="inputType === 'Bayar'"
-                        :headers="detailpesan"
-                        :items="pesanans">
-                          <template v-slot:[`item.Jumlah`]>
-                            <v-row dense>
-                              <v-col
-                                cols="12"
-                                sm="4"
-                                md="3"
-                                >
-                                <v-card-text
-                                  class="text-align-center ml-1"
-                                  >
-                                  {{pesanans.jumlah_menu}}
-                                </v-card-text>
-                              </v-col>
-                            </v-row>
-                          </template>
-                      </v-data-table>
-
-                      <v-data-table
-                        v-else-if="inputType === 'Ubah'"
-                        :headers="detailPesanEdit"
-                        :items="pesanans">
-                        <v-spacer></v-spacer>
-                          <template v-slot:[`item.Jumlah`]="{ item }">
-                            <v-row dense>
-                              <v-col
-                                cols="12"
-                                sm="4"
-                                md="3"
-                                >
-                                <v-card-text
-                                  class="text-align-center ml-1"
-                                  >
-                                  {{item.jumlah_menu}}
-                                </v-card-text>
-                              </v-col>
-                            </v-row>
-                          </template>
-                          <template v-slot:[`item.actions`]="{ item }">
-                            <v-btn dense @click="editDetailpesan(item)">
-                              Edit
-                            </v-btn>
-                            <v-icon medium :color="'red'" class="mr-2 ml-2" @click="deleteDetailpesan(item)">
-                              mdi-delete
-                            </v-icon>
-                          </template>
-                      </v-data-table>
-
-                      <v-text-field
-                        v-model="form.nama_pegawai"
-                        label="Nama Pegawai">
-                      </v-text-field>
-                  </v-container>
-                </v-card-text>
+                    <v-text-field
+                      v-model="form.nama_pegawai"
+                      label="Nama Pegawai">
+                    </v-text-field>
+                </v-container>
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="blue darken-1" text @click="cancel">
@@ -170,7 +182,7 @@
                 {{ form.nama_menu }}
               </h1>
               <v-list-item-subtitle class="my-4">{{ form.deskripsi_menu }}</v-list-item-subtitle>
-              <v-list-item-subtitle><b> Rp.{{ form.harga_menu }}/porsi</b></v-list-item-subtitle>
+              <v-list-item-subtitle><b> Rp {{ form.harga_menu_view }}/porsi</b></v-list-item-subtitle>
               <v-spacer></v-spacer>
               <v-row
                 class="justify-space-between pa-2">
@@ -186,10 +198,10 @@
                     class="text-center d-flex justify-center"
                     style="font-size:20px"
                     >
-                    <v-icon v-if="form.jumlah_menu === 0" disable medium class="mr-6">
+                    <v-icon v-if="form.jumlah_menu === '0'" disable medium class="mr-6">
                       mdi-minus
                     </v-icon>
-                    <v-icon v-else-if="form.jumlah_menu > 0" medium class="mr-6" @click="countTemp('Kurang', form)">
+                    <v-icon v-else-if="form.jumlah_menu > '0'" medium class="mr-6" @click="countTemp('Kurang', form)">
                       mdi-minus
                     </v-icon>
                     {{ form.jumlah_menu }}
@@ -204,7 +216,7 @@
                 <v-btn color="blue darken-1" text @click="dialogTambah=false">
                     Cancel
                 </v-btn>
-                <v-btn color="blue darken-1" text @click="setForm">
+                <v-btn color="blue darken-1" text @click="searchInPesanans()">
                     Save
                 </v-btn>
             </v-card-actions>
@@ -217,7 +229,7 @@
               :headers="detailPesanTambah"
               :items="menusTemp">
                 <template v-slot:[`item.actions`]="{ item }">
-                  <v-icon small class="mr-2" @click="editDetailpesan(item)">
+                  <v-icon small class="mr-2" @click="editDetailpesan(item, item.id)">
                     mdi-plus
                   </v-icon>
                 </template>
@@ -249,7 +261,7 @@
             </v-card>
         </v-dialog>
 
-        <v-snackbar v-model="snackbar" :color="color" timeout="2000" bottom>
+        <v-snackbar v-model="snackbar" :color="color" timeout="4000" bottom>
             {{error_message}}
         </v-snackbar>
     </v-main>
@@ -261,6 +273,7 @@ export default {
   data () {
     return {
       inputType: 'Tambah',
+      editedDP: 'Tambah',
       load: false,
       snackbar: false,
       error_message: '',
@@ -285,7 +298,7 @@ export default {
           sortable: true,
           value: 'tanggal_transaksi'
         },
-        { text: 'Total Harga', value: 'total_harga' },
+        { text: 'Total Harga', value: 'total_harga_view' },
         { text: 'Status Pembayaran', value: 'status_pembayaran' },
         { text: 'Actions', value: 'actions' }
       ],
@@ -296,7 +309,7 @@ export default {
           sortable: true,
           value: 'nama_menu'
         },
-        { text: 'Harga Menu', value: 'harga_menu' },
+        { text: 'Harga Menu', value: 'harga_menu_view' },
         { text: 'Jumlah', value: 'jumlah_menu' }
       ],
       detailPesanEdit: [
@@ -306,7 +319,7 @@ export default {
           sortable: true,
           value: 'nama_menu'
         },
-        { text: 'Harga Menu', value: 'harga_menu' },
+        { text: 'Harga Menu', value: 'harga_menu_view' },
         { text: 'Jumlah', value: 'jumlah_menu' },
         { text: 'Actions', value: 'actions' }
       ],
@@ -317,15 +330,17 @@ export default {
           sortable: true,
           value: 'nama_menu'
         },
-        { text: 'Harga Menu', value: 'harga_menu' },
+        { text: 'Harga Menu', value: 'harga_menu_view' },
         { text: 'Actions', value: 'actions' }
       ],
       jumlahCounter: [],
-      transaksi: new FormData(),
+      transaksi: [],
       transaksis: [],
+      transaksiForm: new FormData(),
       transaksisComp: [],
-      pesanan: new FormData(),
+      pesanan: [],
       pesanans: [],
+      pesananForm: new FormData(),
       // pegawai: new FormData(),
       detailPesanan: new FormData(),
       tampungForm: [],
@@ -338,10 +353,14 @@ export default {
         tanggal_transaksi: null,
         subtotal: 0,
         total_harga: 0,
+        subtotal_view: 0,
+        total_harga_view: 0,
         nama_menu: '',
         tax: 0,
+        tax_view: 0,
         jumlah_menu: 0,
         harga_menu: null,
+        harga_menu_view: null,
         foto_menu: null,
         deskripsi_menu: null,
         jenis_menu: null
@@ -352,7 +371,13 @@ export default {
       menuId: '',
       pesananId: '',
       transaksiId: '',
-      bayarId: ''
+      detailPesananId: '',
+      bayarId: '',
+      formatter: new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: '0'
+      })
     }
   },
   methods: {
@@ -365,11 +390,10 @@ export default {
         }
       }).then(response => {
         this.transaksisComp = response.data.data
-        console.log(this.transaksisComp)
       })
     },
     // read data pesanan
-    readDataPesanan (Id) {
+    async readDataPesanan (Id) {
       const url = this.$api + '/pesanan/' + Id
       this.$http.get(url, {
         headers: {
@@ -378,9 +402,17 @@ export default {
       }).then(response => {
         this.pesanans = response.data.data
         console.log(this.pesanans)
+        for (let i = 0; i < this.pesanans.length; i++) {
+          this.form.subtotal += (this.pesanans[i].jumlah_menu * this.pesanans[i].harga_menu)
+        }
+        this.form.subtotal_view = this.formatter.format(this.form.subtotal)
+        this.form.tax = this.form.subtotal / 10
+        this.form.total_harga = this.form.tax + this.form.subtotal
+        this.form.tax_view = this.formatter.format(this.form.tax)
+        this.form.total_harga_view = this.formatter.format(this.form.total_harga)
       })
     },
-    readOneTransaksi (Id) {
+    async readOneTransaksi (Id) {
       const url = this.$api + '/transaksi/' + Id
       this.$http.get(url, {
         headers: {
@@ -388,7 +420,6 @@ export default {
         }
       }).then(response => {
         this.transaksis = response.data.data
-        console.log(this.transaksis)
       })
     },
     readDataMenu () {
@@ -401,7 +432,6 @@ export default {
         this.menus = response.data.data
         this.menus.jumlah_menu = 0
         this.menusTemp = response.data.data
-        console.log(this.menus)
       })
     },
     countDataMenu () {
@@ -412,7 +442,6 @@ export default {
         }
       }).then(response => {
         this.banyakMenu = response.data.data
-        this.pushCounter()
         // this.makeVarCounter()
       })
     },
@@ -426,7 +455,13 @@ export default {
         this.transaksis = response.data.data
       })
     },
-    // get tanggal hari ini
+    searchMenu (name) {
+      if (name === null || name === '') {
+        this.readData()
+      } else {
+        this.readNamaPembeli(name)
+      }
+    },
     getToday () {
       const today = new Date()
       const tanggal = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate()
@@ -435,16 +470,6 @@ export default {
       const tanggalwaktu = tanggal + '   ' + waktu
       return tanggalwaktu
     },
-    // makeVarCounter () {
-    //   for (let i = 0; i < this.banyakMenu; i++) {
-    //     this.jumlahCounter[i] = 0
-    //   }
-    //   for (let k = 0; k < this.banyakMenu; k++) {
-    //     const jumlahTemp = 0
-    //     this.menus[k].push(jumlahTemp)
-    //   }
-    //   console.log(this.menus)
-    // },
     getSisaMenu () {
       for (let i = 0; i < this.pesanans.length; i++) {
         for (let j = 0; j < this.menus.length; j++) {
@@ -454,20 +479,29 @@ export default {
         }
       }
     },
-    pushCounter () {
-      for (let i = 0; i < this.banyakMenu; i++) {
-        // this.menus[i].push(this.jumlahTemp)
+    searchInPesanans () {
+      for (let i = 0; i < this.pesanans.length; i++) {
+        if (this.form.nama_menu === this.pesanans[i].nama_menu) {
+          this.pesanans[i].jumlah_menu = this.form.jumlah_menu
+        }
       }
-      console.log(this.menus)
+      if (this.dialog === true && this.inputType === 'Ubah' && this.statusData === 'Hapus') {
+        this.deleteOneDP()
+      } else {
+        this.setForm()
+      }
     },
     setForm () {
       if (this.inputType === 'Tambah') {
         this.save()
       } else if (this.inputType === 'Ubah') {
-        if (!(this.dialogEditTambah === true)) {
-          this.updateDP()
-        } else {
+        console.log(this.form.jumlah_menu, this.jumlahTemp)
+        if (this.dialogEditTambah === true) {
           this.increaseDP()
+        } else if (!(this.form.jumlah_menu === this.jumlahTemp)) {
+          console.log(this.detailPesananId)
+          this.editedDP = 'Kurang'
+          this.updateDP()
         }
       } else if (this.inputType === 'Bayar') {
         this.bayar()
@@ -478,16 +512,16 @@ export default {
         this.restoreData()
       } else if (this.statusData === 'Hapus' && this.inputType === 'Tambah') {
         this.deleteData()
-        this.deletePesanan()
+        // this.deletePesanan()
       } else {
-        this.deleteOneDP(this.pesananId)
+        this.deleteOneDP(this.detailPesananId)
       }
     },
     countTemp (value, item) {
       if (value === 'Tambah') {
-        item.jumlah_menu = item.jumlah_menu + 1
+        item.jumlah_menu -= -1
       } else if (value === 'Kurang' && item.jumlah_menu > 0) {
-        item.jumlah_menu = item.jumlah_menu - 1
+        item.jumlah_menu -= 1
       }
     },
     countSubTotal () {
@@ -495,22 +529,20 @@ export default {
       for (let i = 0; i < this.pesanans.length; i++) {
         this.form.subtotal += (this.pesanans[i].jumlah_menu * this.pesanans[i].harga_menu)
       }
-      if (this.inputType === 'Delete') {
+      if (this.inputType === 'Delete' || this.editedDP === 'Kurang') {
         this.form.subtotal -= this.form.jumlah_menu * this.form.harga_menu
-      } else {
+      } else if (this.editedDP === 'Tambah') {
         this.form.subtotal += this.form.jumlah_menu * this.form.harga_menu
       }
-      console.log(this.pesanans)
-      console.log(this.form.subtotal)
+      this.form.subtotal_view = this.formatter.format(this.form.subtotal)
+      console.log(this.form.subtotal_view)
     },
-    // countTax () {
-    //   this.form.tax = 0
-    //   this.form.tax = this.form.subtotal / 10
-    // },
     countTotalHarga () {
       this.form.total_harga = 0
-      this.form.total_harga = (this.form.subtotal / 10) + this.form.subtotal
-      console.log(this.form.total_harga)
+      this.tax = (this.form.subtotal / 10)
+      this.form.total_harga = this.tax + this.form.subtotal
+      this.form.tax_view = this.formatter.format(this.form.tax)
+      this.form.total_harga_view = this.formatter.format(this.form.total_harga)
     },
     loginName () {
       return sessionStorage.getItem('nama')
@@ -527,7 +559,7 @@ export default {
         this.color = 'green'
         this.snackbar = true
         this.load = false
-        this.close()
+        this.cancel()
         this.readData()
         this.resetForm()
       }).catch(error => {
@@ -537,16 +569,50 @@ export default {
         this.load = false
       })
     },
-    async increaseDP () {
-      this.countSubTotal()
-      // this.countTax()
-      this.countTotalHarga()
+    async updateDP () {
+      // this.tampungForm.push(this.form.jumlah_menu)
+      // this.tampungForm.push(this.pesananId)
+      // this.tampungForm.push(this.menuId)
 
+      this.detailPesanan.set('jumlah_menu', JSON.stringify(this.form.jumlah_menu))
+      this.detailPesanan.set('pesananId', JSON.stringify(this.pesananId))
+      this.detailPesanan.set('menuId', JSON.stringify(this.menuId))
+      console.log(this.detailPesanan)
+
+      const url = this.$api + '/updateDetailPesanan'
+      this.load = true
+      this.$http.post(url, this.detailPesanan, {
+        headers: {
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
+        }
+      }).then(response => {
+        this.error_message = response.data.message
+        this.color = 'green'
+        this.snackbar = true
+        this.load = false
+        this.close()
+        this.readData()
+        this.updatePesanan()
+        this.updateTransaksi()
+        this.inputType = 'Tambah'
+      }).catch(error => {
+        console.log(error)
+        this.error_message = error.response.data.message
+        this.color = 'red'
+        this.snackbar = true
+        this.load = false
+      })
+      this.detailPesanan.delete('data')
+    },
+    async increaseDP () {
       this.tampungForm.push(this.form.jumlah_menu)
       this.tampungForm.push(this.pesananId)
       this.tampungForm.push(this.menuId)
 
-      this.detailPesanan.append('data', JSON.stringify(this.tampungForm))
+      // this.detailPesanan.set('jumlah_menu', JSON.stringify(this.form.jumlah_menu))
+      // this.detailPesanan.set('pesananId', JSON.stringify(this.pesananId))
+      this.detailPesanan.set('data', JSON.stringify(this.tampungForm))
+      console.log(this.detailPesanan)
 
       const url = this.$api + '/tambahDetailPesanan'
       this.load = true
@@ -554,14 +620,16 @@ export default {
         headers: {
           Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
-      }).then().then(response => {
+      }).then(response => {
         this.error_message = response.data.message
         this.color = 'green'
         this.snackbar = true
         this.load = false
         this.close()
         this.readData()
-        this.updatePandT()
+        this.readDataPesanan(this.pesananId)
+        this.updatePesanan()
+        this.updateTransaksi()
         this.inputType = 'Tambah'
       }).catch(error => {
         this.error_message = error.response.data.message
@@ -569,87 +637,69 @@ export default {
         this.snackbar = true
         this.load = false
       })
-    },
-    async updateDP () {
-      this.countSubTotal()
-      // this.countTax()
-      this.countTotalHarga()
-      this.detailPesanan.append('jumlah_menu', this.form.jumlah_menu)
-
-      const url = this.$api + '/detailPesanan/' + this.editId
-      this.load = true
-      this.$http.post(url, this.detailPesanan, {
-        headers: {
-          Authorization: 'Bearer ' + sessionStorage.getItem('token')
-        }
-      }).then().then(response => {
-        this.error_message = response.data.message
-        this.color = 'green'
-        this.snackbar = true
-        this.load = false
-        this.close()
-        this.readData()
-        this.updatePandT()
-        this.inputType = 'Tambah'
-      }).catch(error => {
-        this.error_message = error.response.data.message
-        this.color = 'red'
-        this.snackbar = true
-        this.load = false
-      })
+      this.detailPesanan.delete('data')
     },
     updatePesanan () {
-      this.pesanan.append('subtotal', this.form.subtotal)
-      this.pesanan.append('nama_pembeli', this.form.nama_pembeli)
-      console.log(this.pesanan)
-      const url = this.$api + '/pesanan/' + this.editId
+      this.form.subtotal = 0
+      for (let i = 0; i < this.pesanans.length; i++) {
+        this.form.subtotal += (this.pesanans[i].jumlah_menu * this.pesanans[i].harga_menu)
+      }
+      this.pesanan.push(this.form.subtotal)
+      this.pesanan.push(this.form.nama_pembeli)
+      this.pesanan.push(this.form.tanggal_transaksi)
+
+      this.pesananForm.append('data', JSON.stringify(this.pesanan))
+      console.log(this.pesananForm)
+
+      const url = this.$api + '/pesanan/' + this.pesananId
       this.load = true
-      this.$http.post(url, this.pesanan, {
+      this.$http.post(url, this.pesananForm, {
         headers: {
           Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
-      }).then().then(response => {
+      }).then(response => {
         this.error_message = response.data.message
         this.color = 'green'
         this.snackbar = true
         this.load = false
-        this.close()
+        this.cancel()
         this.readData()
-        this.inputType = 'Tambah'
       }).catch(error => {
         this.error_message = error.response.data.message
         this.color = 'red'
         this.snackbar = true
         this.load = false
       })
+      this.pesananForm.delete('data')
     },
     updateTransaksi () {
-      this.transaksi.append('total_harga', this.form.total_harga)
-      this.transaksi.append('tanggal_transaksi', this.form.tanggal_transaksi)
-      console.log(this.transaksi)
+      this.form.total_harga = 0
+      this.form.total_harga = (this.form.subtotal / 10) + this.form.subtotal
+      this.transaksi.push(this.form.total_harga)
+      this.transaksi.push(this.form.tanggal_transaksi)
+
+      this.transaksiForm.append('data', JSON.stringify(this.transaksi))
+
       const url = this.$api + '/transaksi/' + this.transaksis[0].id_transaksi
       this.load = true
-      this.$http.post(url, this.transaksi, {
+      this.$http.post(url, this.transaksiForm, {
         headers: {
           Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
-      }).then().then(response => {
+      }).then(response => {
         this.error_message = response.data.message
         this.color = 'green'
         this.snackbar = true
         this.load = false
-        this.close()
+        this.cancel()
         this.readData()
-        this.inputType = 'Tambah'
       }).catch(error => {
         this.error_message = error.response.data.message
         this.color = 'red'
         this.snackbar = true
         this.load = false
       })
-      // this.Async()
-      // this.Async()
-      // this.resetForm()
+      this.transaksiForm.delete('data')
     },
     restoreData () {
       const url = this.$api + '/transaksi/restore/' + this.restoreId
@@ -663,7 +713,7 @@ export default {
         this.color = 'green'
         this.snackbar = true
         this.load = false
-        this.close()
+        this.cancel()
         this.readData() // mengambil data
         this.resetForm()
         this.inputType = 'Tambah'
@@ -686,16 +736,45 @@ export default {
         this.color = 'green'
         this.snackbar = true
         this.load = false
-        this.close()
+        this.cancel()
         this.readData() // mengambil data
-        this.resetForm()
-        this.inputType = 'Tambah'
       }).catch(error => {
         this.error_message = error.response.data.message
         this.color = 'red'
         this.snackbar = true
         this.load = false
       })
+    },
+    deletePesanan () {
+      this.form.subtotal = 0
+      for (let i = 0; i < this.pesanans.length; i++) {
+        this.form.subtotal += (this.pesanans[i].jumlah_menu * this.pesanans[i].harga_menu)
+      }
+      this.pesanan.push(this.form.subtotal)
+      this.pesanan.push(this.form.nama_pembeli)
+
+      this.pesananForm.append('data', JSON.stringify(this.pesanan))
+
+      const url = this.$api + '/pesanan/' + this.pesananId
+      this.load = true
+      this.$http.post(url, this.pesananForm, {
+        headers: {
+          Authorization: 'Bearer ' + sessionStorage.getItem('token')
+        }
+      }).then(response => {
+        this.error_message = response.data.message
+        this.color = 'green'
+        this.snackbar = true
+        this.load = false
+        this.cancel()
+        this.readData()
+      }).catch(error => {
+        this.error_message = error.response.data.message
+        this.color = 'red'
+        this.snackbar = true
+        this.load = false
+      })
+      this.pesananForm.delete('data')
     },
     deleteOneDP (id) {
       const url = this.$api + '/detailPesanan/softDelete/' + id
@@ -710,8 +789,8 @@ export default {
         this.snackbar = true
         this.load = false
         this.close()
-        this.updatePandT()
-        this.inputType = 'Tambah'
+        this.updateTransaksi()
+        this.updatePesanan()
       }).catch(error => {
         this.error_message = error.response.data.message
         this.color = 'red'
@@ -726,16 +805,11 @@ export default {
         }, 2500)
       })
     },
-    async updatePandT () {
-      this.countSubTotal()
-      this.updatePesanan()
-      this.updateTransaksi()
-    },
     tambahDetailPesan () {
       this.getSisaMenu()
       this.dialogEditTambah = true
     },
-    editDetailpesan (item) {
+    editDetailpesan (item, idMenu) {
       if (this.dialogEditTambah === true) {
         this.form.jumlah_menu = 0
         for (let i = 0; i < this.menus.length; i++) {
@@ -746,71 +820,61 @@ export default {
         }
       } else {
         this.form.jumlah_menu = item.jumlah_menu
+        this.jumlahTemp = item.jumlah_menu
         this.editId = item.id
       }
       this.pesananId = this.transaksis[0].id_pesanan
+      this.detailPesananId = this.transaksis[0].id_detailpesanan
+      this.menuId = idMenu
       item.nama_pegawai = sessionStorage.getItem('nama')
       this.form.nama_menu = item.nama_menu
       this.form.harga_menu = item.harga_menu
+      this.form.harga_menu_view = item.harga_menu_view
       this.form.deskripsi_menu = item.deskripsi_menu
       this.dialogTambah = true
-      console.log(item)
-      console.log(this.form)
-      console.log(this.pesananId)
-      console.log(this.menuId)
     },
     deleteDetailpesan (item) {
-      console.log(item)
-      console.log(this.inputType)
       this.form.jumlah_menu = item.jumlah_menu
       this.form.harga_menu = item.harga_menu
       this.inputType = 'Delete'
       for (let i = 0; i < this.pesanans.length; i++) {
         if (this.pesanans[i].id === item.id && this.pesanans[i].id_menu === item.id_menu) {
-          // this.deleteOneDP(item.id)
-          this.deleteHandler(item.id)
+          this.deleteHandler(item)
         }
       }
     },
-    tambahHandler () {
-      this.dialog = true
-      this.readDataMenu()
-    },
-    editHandler (item) {
+    async editHandler (item) {
       this.inputType = 'Ubah'
       this.editId = item.id
-      this.readOneTransaksi(this.editId)
+      await this.readOneTransaksi(this.editId)
       item.nama_pegawai = sessionStorage.getItem('nama')
       this.BEHandler(item, this.editId)
-      console.log(this.editId)
     },
     bayarHandler (item) {
       this.inputType = 'Bayar'
       this.bayarId = item.id
       item.nama_pegawai = sessionStorage.getItem('nama')
       this.BEHandler(item, this.bayarId)
-      console.log(this.bayarId)
     },
-    BEHandler (item, Id) {
+    async BEHandler (item, Id) {
+      await this.readDataPesanan(Id)
+      this.jumlahCounter = item
       this.form.nama_pembeli = item.nama_pembeli
       this.form.nama_pegawai = item.nama_pegawai
       this.form.tanggal_transaksi = item.tanggal_transaksi
-      this.form.total_harga = item.total_harga
       this.form.nama_menu = item.nama_menu
       this.form.jumlah_menu = item.jumlah_menu
       this.form.harga_menu = item.harga_menu
+      this.form.harga_menu_view = item.harga_menu_view
       this.form.foto_menu = item.foto_menu
       this.form.deskripsi_menu = item.deskripsi_menu
       this.form.jenis_menu = item.jenis_menu
-      this.form.subtotal = 0
-      this.form.total_harga = 0
       this.dialog = true
-      this.readDataPesanan(Id)
     },
     deleteHandler (item) {
-      console.log(item.id)
       this.deleteId = item.id_transaksi
-      this.pesananId = item.id
+      this.pesananId = item.id_pesanan
+      this.detailPesananId = item.id
       this.dialogConfirm = true
       this.statusData = 'Hapus'
       this.countSubTotal()
@@ -828,6 +892,10 @@ export default {
       this.dialogTambah = false
       this.dialogEditTambah = false
       this.inputType = 'Tambah'
+      this.statusData = ''
+      this.detailPesanan.delete('data')
+      this.transaksiForm.delete('data')
+      this.pesananForm.delete('data')
     },
     cancel () {
       this.resetForm()
@@ -836,6 +904,11 @@ export default {
       this.dialogConfirm = false
       this.dialogTambah = false
       this.dialogEditTambah = false
+      this.pesananId = ''
+      this.menuId = ''
+      this.detailPesananId = ''
+      this.bayarId = ''
+      this.editId = ''
       this.inputType = 'Tambah'
     },
     resetForm () {
@@ -846,21 +919,29 @@ export default {
         tax: 0,
         subtotal: 0,
         total_harga: 0,
+        tax_view: 0,
+        subtotal_view: 0,
+        total_harga_view: 0,
         nama_pegawai: null,
         tanggal_transaksi: null,
         harga_menu: null,
+        harga_menu_view: null,
         foto_menu: null,
         deskripsi_menu: null,
         jenis_menu: null
       }
       this.pesanans = []
       this.transaksis = []
+      this.pesanan = []
+      this.transaksi = []
+      this.editedDP = 'Tambah'
+      this.statusData = ''
+      this.detailPesanan.delete('data')
+      this.transaksiForm.delete('data')
+      this.pesananForm.delete('data')
     },
     replaceUrl () {
       this.$router.replace('/')
-    },
-    countMenu () {
-
     }
   },
   computed: {
@@ -872,7 +953,17 @@ export default {
     this.readData()
     this.countDataMenu()
     this.readDataMenu()
-    // this.readDataPegawai()
+  },
+  watch: {
+    pesanans: {
+      deep: true,
+      handler: function (after) {
+        // for (let i = 0; i < after.length; i++) {
+        //   const item = after[i]
+        //   item.jumlah_menu = this.form.jumlah_menu
+        // }
+      }
+    }
   }
 }
 </script>

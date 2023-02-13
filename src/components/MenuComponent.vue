@@ -18,7 +18,7 @@
                   label="Search"
                   single-line
                   hide-details
-                  @keydown.enter="readNamaMenu(search)"
+                  @keydown.enter="searchMenu(search)"
               ></v-text-field>
               <v-spacer></v-spacer>
               <v-btn color="success" dark @click="dialog = true">
@@ -38,10 +38,10 @@
                   <v-icon small class="mr-2" @click="editHandler(item)">
                     mdi-pencil
                   </v-icon>
-                  <v-icon v-if="item.is_Deleted === 0" small class="mr-2" @click="deleteHandler(item.id)">
+                  <v-icon v-if="item.is_Deleted === '0'" small class="mr-2" @click="deleteHandler(item.id)">
                     mdi-delete
                   </v-icon>
-                  <v-icon v-else-if="item.is_Deleted === 1" small class="mr-2" @click="restoreHandler(item.id)">
+                  <v-icon v-else-if="item.is_Deleted === '1'" small class="mr-2" @click="restoreHandler(item.id)">
                     mdi-restore
                   </v-icon>
               </template>
@@ -54,26 +54,6 @@
                     <span class="headline">{{inputType}} Menu</span>
                 </v-card-title>
                 <v-card-text>
-                  <!-- <v-avatar
-                    class="profile mx-10"
-                    color="grey"
-                    size="164"
-                    tile
-                  >
-                    <v-img :src= "urlFoto">
-                    </v-img>
-                  </v-avatar>
-                    <v-file-input
-                      v-model="pictTemp"
-                      accept=".png, .jpeg, .jpg"
-                      hint="File extentions (.png, .jpg, .jpeg)"
-                      placeholder="Upload Foto Menu"
-                      prepend-icon="mdi-camera"
-                      outlined
-                      filled
-                      class="my-3 mx-10"
-                      @click:clear="urlFoto=''"
-                      @change="checkInput()"/> -->
 
                     <v-container>
                         <v-text-field
@@ -82,25 +62,26 @@
                             required
                         ></v-text-field>
 
+                        <v-select
+                            v-model="form.jenis_menu"
+                            :items="jenisMenu"
+                            :rules="[(v) => !!v || 'Jenis menu tidak boleh kosong']"
+                            label="Jenis"
+                            required
+                        ></v-select>
+
                         <v-text-field
                             v-model="form.harga_menu"
                             label="Harga"
                             required
                         ></v-text-field>
 
-                        <v-text-field
+                        <v-textarea
                             v-model="form.deskripsi_menu"
                             label="Deskripsi"
                             required
-                        ></v-text-field>
+                        ></v-textarea>
 
-                        <v-text-field
-                            v-model="form.jenis_menu"
-                            :items="jenisMenu"
-                            :rules="[(v) => !!v || 'Jenis menu tidak boleh kosong']"
-                            label="Jenis"
-                            required
-                        ></v-text-field>
                     </v-container>
                 </v-card-text>
                 <v-card-actions>
@@ -199,27 +180,7 @@
           </v-card>
         </v-dialog>
 
-        <!-- <v-dialog v-model="dialogUpload" persistent max-width="600px" @keydown.esc="dialogUpload = false">
-            <v-card>
-                <v-card-title>
-                    <span class="headline">Upload Foto Menu</span>
-                </v-card-title>
-                <img :src="this.$api + menus.foto_menu" width="300" height="200" />
-                <v-spacer></v-spacer>
-                <input type="file" accept="image" @change="imageChanged">
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn text @click="dialogUpload = false">
-                        Cancel
-                    </v-btn>
-                    <v-btn color="blue darken-1" text @click="uploadImg">
-                        Upload Photo
-                    </v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog> -->
-
-        <v-snackbar v-model="snackbar" :color="color" timeout="2000" bottom>
+        <v-snackbar v-model="snackbar" :color="color" timeout="4000" bottom>
             {{error_message}}
         </v-snackbar>
     </v-main>
@@ -253,17 +214,12 @@ export default {
           sortable: true,
           value: 'nama_menu'
         },
-        { text: 'Harga', value: 'harga_menu' },
+        { text: 'Harga', value: 'harga_menu_view' },
         { text: 'Foto', value: 'foto_menu' },
         { text: 'Deskripsi', value: 'deskripsi_menu' },
         { text: 'Jenis', value: 'jenis_menu' },
         { text: 'Actions', value: 'actions' }
       ],
-      // showMenu: [
-      //   { text: 'Show All', value: 'Show All' },
-      //   { text: 'Show On Menu', value: 'Show On Menu' },
-      //   { text: 'Show Deleted', value: 'Show Deleted' }
-      // ],
       jenisMenu: [
         'Kopi',
         'Non-Kopi',
@@ -275,6 +231,7 @@ export default {
       form: {
         nama_menu: null,
         harga_menu: null,
+        harga_menu_view: null,
         foto_menu: null,
         deskripsi_menu: null,
         jenis_menu: null
@@ -332,17 +289,39 @@ export default {
         this.menus = response.data.data
       })
     },
+    searchMenu (name) {
+      if (name === null || name === '') {
+        this.readData()
+      } else {
+        this.readNamaMenu(name)
+      }
+    },
     dialogGambarShow (menu) {
       this.pictTemp = this.$urlFoto + menu.foto_menu
       this.namaTemp = menu.nama_menu
       this.dialogGambar = true
     },
     setForm () {
-      if (this.inputType === 'Tambah') {
-        this.save()
+      const result = /^./.test(this.form.harga_menu)
+      if (this.inputType === 'Tambah' && !(this.form.nama_menu === null) && !(this.form.jenis_menu === null) && !(this.form.harga_menu === null) && !(this.form.deskripsi_menu === null)) {
+        if (result === true) {
+          this.form.harga_menu = Number(this.form.harga_menu.replace(/\D/g, ''))
+          this.save()
+        } else {
+          this.save()
+        }
+      } else if (this.inputType === 'Edit') {
+        if (result === true) {
+          this.form.harga_menu = Number(this.form.harga_menu.replace(/\D/g, ''))
+          this.update()
+        } else {
+          this.update()
+        }
       } else {
-        console.log(this.editId)
-        this.update()
+        this.error_message = 'Data tidak boleh kosong'
+        this.color = 'red'
+        this.snackbar = true
+        this.load = false
       }
     },
     checkInput () {
@@ -408,7 +387,6 @@ export default {
       this.menuTemp.push(this.form.harga_menu)
       this.menuTemp.push(this.form.deskripsi_menu)
       this.menuTemp.push(this.form.jenis_menu)
-      console.log(this.menu)
 
       const url = this.$api + '/menu/' + this.editId
       this.load = true
@@ -436,7 +414,7 @@ export default {
     deleteData () {
       const url = this.$api + '/menu/softDelete/' + this.deleteId
       this.load = true
-      this.$http.put(url, {
+      this.$http.put(url, null, {
         headers: {
           Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
@@ -458,8 +436,8 @@ export default {
     },
     // restore data produk
     restoreData () {
-      const url = this.$api + '/menu/restore/' + this.deletedId
-      this.$http.put(url, {
+      const url = this.$api + '/menu/restore/' + this.restoreId
+      this.$http.put(url, null, {
         headers: {
           Authorization: 'Bearer ' + sessionStorage.getItem('token')
         }
@@ -497,6 +475,7 @@ export default {
       this.form.nama_menu = item.nama_menu
       this.urlFoto = 'http://127.0.0.1:8000/menu_picture' + item.pictTemp
       this.form.harga_menu = item.harga_menu
+      this.form.harga_menu_view = item.harga_menu_view
       this.form.foto_menu = item.foto_menu
       this.form.deskripsi_menu = item.deskripsi_menu
       this.form.jenis_menu = item.jenis_menu
@@ -537,12 +516,14 @@ export default {
       this.form = {
         nama_menu: null,
         harga_menu: null,
+        harga_menu_view: null,
         foto_menu: [],
         deskripsi_menu: null,
         unit_menu: null,
         jenis_menu: null
       }
-      this.$forceUpdate()
+      this.menuTemp = []
+      this.menu = new FormData()
     }
   },
   computed: {

@@ -30,7 +30,7 @@
                       background: '#ffffff'
                   }">
             <div class="row" @click="tambahHandler(item)">
-              <div class="col-5">
+              <div class="col-5 ma-auto">
                 <v-img
                   :src='showPic(item)'
                   class="fotoMenu alignHorizontal"
@@ -38,7 +38,14 @@
               </div>
               <div class="col-7">
                 <v-list-item-content class="mt-2 flex-grow-0 flex-shrink-1">
-                  <v-list-item-title> <b>{{ item.nama_menu }} &dash; Rp.{{ item.harga_menu }}</b></v-list-item-title>
+                  <div class="row ma-auto">
+                    <div class="col">
+                      <p class="title text-align-left"> <b>{{ item.nama_menu }}</b></p>
+                    </div>
+                    <div class="col ma-auto">
+                      <p class="title text-justify"> <b>Rp {{ item.harga_menu_view }}</b></p>
+                    </div>
+                  </div>
                   <v-card-text class="mr-2 text-justify">{{ item.deskripsi_menu }}</v-card-text>
                 </v-list-item-content>
               </div>
@@ -61,8 +68,12 @@
                 class="mt-4"
                 max-width="80%"
               ></v-divider>
-              <v-list-item-subtitle class="my-4">{{ form.deskripsi_menu }}</v-list-item-subtitle>
-              <v-list-item-subtitle><b> Rp.{{ form.harga_menu }}/porsi</b></v-list-item-subtitle>
+              <v-list-item-subtitle class="my-4">
+                {{ form.deskripsi_menu }}
+              </v-list-item-subtitle>
+              <v-list-item-subtitle>
+                <b>Rp {{ form.harga_menu_view }}/porsi</b>
+              </v-list-item-subtitle>
               <v-spacer></v-spacer>
               <v-row
                 class="justify-space-between pa-2">
@@ -78,17 +89,26 @@
                     class="text-center d-flex justify-center"
                     style="font-size:20px"
                     >
-                    <v-icon v-if="form.jumlah_menu === 0" disable medium class="mr-6">
+                    <v-icon v-if="form.jumlah_menu === '0'"
+                      disable
+                      medium
+                      class="mr-6">
                       mdi-minus
                     </v-icon>
-                    <v-icon v-else-if="form.jumlah_menu === 1 && inputType === 'Ubah'" medium class="mr-6" @click="dialogConfirm = true">
+                    <v-icon v-else-if="form.jumlah_menu === '1' && inputType === 'Ubah'"
+                      medium class="mr-6"
+                      @click="dialogConfirm = true">
                       mdi-minus
                     </v-icon>
-                    <v-icon v-else-if="form.jumlah_menu > 0" medium class="mr-6" @click="countTemp('Kurang', form)">
+                    <v-icon v-else-if="form.jumlah_menu > '0'"
+                      medium
+                      class="mr-6"
+                      @click="countTemp('Kurang', form)">
                       mdi-minus
                     </v-icon>
                     {{ form.jumlah_menu }}
-                    <v-icon medium class="ml-6" @click="countTemp('Tambah', form)">
+                    <v-icon medium class="ml-6"
+                      @click="countTemp('Tambah', form)">
                       mdi-plus
                     </v-icon>
                   </v-col>
@@ -99,7 +119,7 @@
                 <v-btn color="blue darken-1" text @click="dialogTambah=false">
                     Cancel
                 </v-btn>
-                <v-btn color="blue darken-1" text @click="setForm(form.jumlah_menu)">
+                <v-btn color="blue darken-1" text @click="addToCart(form.jumlah_menu)">
                     Add to Cart
                 </v-btn>
             </v-card-actions>
@@ -108,7 +128,7 @@
 
         <v-dialog v-model="dialogCart"
           max-width="1000px"
-          width="80%">
+          width="90%">
           <v-card class="pa-2">
             <v-card-title>
               Pesanan Anda
@@ -127,7 +147,7 @@
 
             <v-flex v-for="item in cart" :key="item.id">
               <v-card
-                class="text-xs ma-4 cards"
+                class="text-xs ma-2 cards"
                 elevation="0"
                 outlined>
                 <div class="row">
@@ -137,47 +157,55 @@
                       class="fotoMenu alignHorizontal"
                     />
                   </div>
-                  <div class="col-3 d-flex ma-auto pa-auto">
-                    <v-list-item-content class="pa-2">
-                      <v-list-item-title>
-                        <b>{{ item.nama_menu }}</b><br/><br/>
-                        <b> Rp.{{ item.harga_menu }}</b>
-                      </v-list-item-title>
-                    </v-list-item-content>
-                  </div>
-                  <div class="col-2 d-flex ma-auto pa-auto">
-                    <v-list-item-subtitle>
-                      <v-col class="col d-flex justify-center align-text-center mt-4">
-                        <b>Jumlah :</b>
-                      </v-col>
-                      <v-col class="col d-flex justify-center align-text-center mb-5">
-                        x {{ item.jumlah_menu }}
-                      </v-col>
-                    </v-list-item-subtitle>
-                  </div>
-                  <div class="col-4 d-flex ma-auto pa-auto">
-                    <v-list-item-subtitle>
-                      <div class="row">
-                        <v-col class="col">
-                          <v-btn class="ml-4" @click="editHandler(item)">
-                            Edit
-                          </v-btn>
+                    <div class="col-7 mx-0 my-auto pa-0">
+                      <v-list-item-content>
+                        <v-list-item-title class="overflow-x-auto">
+                          <p class="text-justify"><b>{{ item.nama_menu }}</b></p>
+                        </v-list-item-title>
+                        <v-list-item-subtitle>
+                          <v-row class="justify-space-between">
+                            <v-col>
+                              <b>Rp {{ item.harga_menu_view }}</b>
+                            </v-col>
+                            <v-col>
+                              x {{ item.jumlah_menu }}
+                            </v-col>
+                          </v-row>
+                        </v-list-item-subtitle>
+                      </v-list-item-content>
+                    </div>
+                    <!-- <div class="row ma-auto pa-auto">
+                      <v-list-item-subtitle class="overflow-x-auto">
+                        <v-col
+                          class="col justify-center align-text-right ma-auto">
+                          x {{ item.jumlah_menu }}
                         </v-col>
-                        <v-col class="col">
-                          <v-icon medium :color="'red'" class="mr-2 ml-2" @click="deleteHandler()">
+                      </v-list-item-subtitle>
+                    </div> -->
+                  <div class="col-2 ma-auto pa-auto">
+                      <div class="row">
+                        <div class="col">
+                          <v-icon class=""
+                            @click="editHandler(item)">
+                            mdi-pencil
+                          </v-icon>
+                          <br/><br/>
+                          <v-icon medium
+                            :color="'red'"
+                            class=""
+                            @click="deleteHandler()">
                             mdi-delete
                           </v-icon>
-                        </v-col>
+                        </div>
                       </div>
-                    </v-list-item-subtitle>
                   </div>
                 </div>
               </v-card>
             </v-flex>
             <br/>
-            <v-card-subtitle><b>Subtotal : {{ this.subtotal }}</b></v-card-subtitle>
-            <v-card-subtitle><b>Tax : {{ this.tax }}</b></v-card-subtitle>
-            <v-card-subtitle><b>Total Harga : {{ this.totalHarga }}</b></v-card-subtitle>
+            <v-card-subtitle><b>Subtotal : {{ this.subtotal_view }}</b></v-card-subtitle>
+            <v-card-subtitle><b>Tax : {{ this.tax_view }}</b></v-card-subtitle>
+            <v-card-subtitle><b>Total Harga : {{ this.totalHarga_view }}</b></v-card-subtitle>
             <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="blue darken-1" text @click="close()">
@@ -205,83 +233,81 @@
                 <v-list-item-title>
                   <v-row class="mb-4 justify-center">
                     <v-col
-                      cols="3"
-                      class="text-left">
+                      cols="4"
+                      class="text-left wrapWhiteSpace">
                       <b>Nama Pembeli</b>
                     </v-col>
                     <v-col
-                      cols="3"
-                      class="text-right">
+                      cols="4"
+                      class="text-right wrapWhiteSpace">
                       <b>{{ form.nama_pembeli }}</b>
                     </v-col>
                   </v-row>
                   <v-row class="mb-4 justify-center">
                     <v-col
-                      cols="3"
+                      cols="4"
                       class="text-left">
-                      <b>Tanggal Transaksi</b>
+                      <p class="text-align-left wrapWhiteSpace"><b>Tanggal Transaksi</b></p>
                     </v-col>
                     <v-col
-                      cols="3"
-                      class="text-right">
+                      cols="4"
+                      class="text-right wrapWhiteSpace">
                       <b>{{ this.tanggalIni }}</b>
                     </v-col>
                   </v-row>
                 </v-list-item-title>
-              <v-divider class="d-flex justify-center mx-auto" width="55%"></v-divider>
+              <v-divider class="d-flex justify-center mx-auto" width="60%"></v-divider>
               <v-flex v-for="item in cart" :key="item.id">
                 <div class="row justify-center">
-                  <div class="col-3">
-                    <v-list-item-content class="text-left">
-                      <v-list-item-title>
-                        <b>{{ item.nama_menu }}</b><br/><br/>
-                        <b>x {{ item.jumlah_menu }}</b>
-                      </v-list-item-title>
-                    </v-list-item-content>
+                  <div class="col-4 text-left wrapWhiteSpace">
+                    <p class="text-align-left pt-2">
+                      <b>{{ item.nama_menu }}</b><br/><br/>
+                      <b>x {{ item.jumlah_menu }}</b>
+                    </p>
                   </div>
-                  <div class="col-3">
-                    <v-list-item-title class="text-right pt-2">
-                        <b>Rp. {{ item.harga_menu * item.jumlah_menu }}</b>
-                    </v-list-item-title>
+                  <div class="col-4 text-right wrapWhiteSpace">
+                    <p class="pt-2">
+                      <b>{{ item.subHarga }}</b>
+                    </p>
                   </div>
                 </div>
               </v-flex>
-              <v-divider class="d-flex justify-center mx-auto mt-2" width="55%"></v-divider>
+              <v-divider class="d-flex justify-center mx-auto mt-2" width="60%"></v-divider>
               <v-list-item-title class="my-4">
                 <v-row class="justify-center">
                   <v-col
-                    cols="3"
-                    class="text-left">
+                    cols="4"
+                    class="text-left wrapWhiteSpace">
                     <b>Subtotal</b>
                   </v-col>
                   <v-col
-                    cols="3"
-                    class="text-right">
-                    <b>{{ this.subtotal }}</b>
+                    cols="4"
+                    class="text-right wrapWhiteSpace">
+                    <b>{{ this.subtotal_view }}</b>
                   </v-col>
                 </v-row>
                 <v-row class="justify-center">
                   <v-col
-                    cols="3"
-                    class="text-left">
+                    cols="4"
+                    class="text-left wrapWhiteSpace">
                     <b>Tax</b>
                   </v-col>
                   <v-col
-                    cols="3"
-                    class="text-right">
-                    <b>{{ this.tax }}</b>
+                    cols="4"
+                    class="text-right wrapWhiteSpace">
+                    <b>{{ this.tax_view }}</b>
                   </v-col>
                 </v-row>
                 <v-row class="justify-center">
                   <v-col
-                    cols="3"
-                    class="text-left">
+                    cols="4"
+                    class="text-left wrapWhiteSpace">
                     <b>Total Harga</b>
                   </v-col>
                   <v-col
-                    cols="3"
-                    class="text-right">
-                    <b>{{ this.totalHarga }}</b>
+                    cols="4"
+                    class="text-right wrapWhiteSpace">
+                    <b>{{ this.totalHarga_view }}</b>
                   </v-col>
                 </v-row>
               </v-list-item-title>
@@ -413,30 +439,32 @@ export default {
       detailPesanan: new FormData(),
       transaksi: new FormData(),
       menus: [],
+      menusTemp: [],
       detailPesanans: [],
       pesanans: [],
       transaksis: [],
       cart: [],
+      cartTemp: [],
       form: {
         nama_pembeli: null,
         nama_menu: null,
         harga_menu: null,
+        harga_menu_view: null,
         foto_menu: null,
         deskripsi_menu: null,
         jenis_menu: null,
-        jumlah_menu: 0
+        jumlah_menu: 0,
+        subHarga: 0
       },
       tampungForm: [],
-      tampungId: [
-        {
-          id_menu: 0
-        }
-      ],
-      tampungFull: [[], [], []],
+      // tampungFull: [[], [], []],
       id_pesanan: null,
       subtotal: 0,
       tax: 0,
       totalHarga: 0,
+      subtotal_view: 0,
+      tax_view: 0,
+      totalHarga_view: 0,
       deleteId: '',
       editId: '',
       tambahId: '',
@@ -451,13 +479,11 @@ export default {
   },
   methods: {
     // read data menu
-    readData () {
+    async readData () {
       const url = this.$api + '/customer'
-      this.$http.get(url, {
+      await this.$http.get(url, {
       }).then(response => {
         this.menus = response.data.data
-        console.log(this.cart)
-        console.log(this.form)
       })
     },
     async readPesanan () {
@@ -465,7 +491,6 @@ export default {
       this.$http.get(url, {
       }).then(response => {
         this.pesanans = response.data.data
-        console.log(this.pesanans)
       })
     },
     readTransaksi () {
@@ -473,15 +498,14 @@ export default {
       this.$http.get(url, {
       }).then(response => {
         this.transaksis = response.data.data
-        console.log(this.transaksis)
       })
     },
-    searchMenu (name) {
+    async searchMenu (name) {
       if (name === null || name === '') {
         this.readData()
       } else {
         const url = this.$api + '/customer/search=' + name
-        this.$http.get(url, {
+        await this.$http.get(url, {
         }).then(response => {
           this.menus = response.data.data
         })
@@ -508,7 +532,7 @@ export default {
         }
       }
     },
-    setForm (jumlah) {
+    addToCart (jumlah) {
       if (jumlah !== 0 && this.inputType === 'Tambah') {
         if (this.cart.length === 0) {
           this.cart.push(this.form)
@@ -530,6 +554,8 @@ export default {
             this.cart[j].jumlah_menu = jumlah
           }
         }
+        this.sumSubtotal()
+        this.dialogTambah = false
       }
     },
     async waitForPayment () {
@@ -539,6 +565,11 @@ export default {
         this.readTransaksi()
         await this.Async()
         await this.Async()
+        if (!(sessionStorage.getItem('token') === null)) {
+          this.$router.push({
+            name: 'transaksi'
+          })
+        }
       }
       while (this.transaksis[0].status_pembayaran === 0)
       this.tanggalIni = this.transaksis[0].tanggal_transaksi
@@ -546,11 +577,22 @@ export default {
       this.dialogNota = true
     },
     sumSubtotal () {
+      const formatter = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: '0'
+      })
+      this.subtotal = 0
       for (let j = 0; j < this.cart.length; j++) {
         this.subtotal += (this.cart[j].harga_menu * this.cart[j].jumlah_menu)
+        this.cart[j].subHarga = this.cart[j].harga_menu * this.cart[j].jumlah_menu
+        this.cart[j].subHarga = formatter.format(this.cart[j].subHarga)
       }
       this.tax = this.subtotal / 10
       this.totalHarga = this.subtotal + this.tax
+      this.subtotal_view = formatter.format(this.subtotal)
+      this.tax_view = formatter.format(this.tax)
+      this.totalHarga_view = formatter.format(this.totalHarga)
     },
     async searchIdPesanan () {
       for (let i = 0; i < this.pesanans.length; i++) {
@@ -571,8 +613,6 @@ export default {
         }
       }
       this.detailPesanan.append('data', JSON.stringify(this.tampungForm))
-      console.log(this.detailPesanan)
-      console.log(this.tampungForm)
     },
     Async () {
       return new Promise((resolve) => {
@@ -655,8 +695,9 @@ export default {
       // this.cart = []
     },
     ETHandler (item) {
-      this.form.nama_menu = item.nama_menu
       this.form.harga_menu = item.harga_menu
+      this.form.nama_menu = item.nama_menu
+      this.form.harga_menu_view = item.harga_menu_view
       this.form.foto_menu = item.foto_menu
       this.form.deskripsi_menu = item.deskripsi_menu
       this.form.jenis_menu = item.jenis_menu
@@ -713,6 +754,7 @@ export default {
         nama_pembeli: null,
         nama_menu: null,
         harga_menu: null,
+        harga_menu_view: null,
         foto_menu: null,
         deskripsi_menu: null,
         jenis_menu: null,
@@ -726,8 +768,8 @@ export default {
       return this.inputType
     }
   },
-  mounted () {
-    this.readData()
+  async mounted () {
+    await this.readData()
     // this.day = this.date.getDate()
     this.day = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(this.date)
     this.month = this.date.getMonth() + 1
@@ -735,20 +777,61 @@ export default {
     this.currentDate = `${this.year}-${this.month}-${this.day}`
     this.readPesanan()
     this.searchIdPesanan()
-    console.log(this.currentDate)
-    console.log(this.pesanans)
-    console.log(this.id_pesanan)
   }
 }
 </script>
 <style>
-.fotoMenu {
-  height: 128px;
-  width: 128px;
-  min-width: 100px;
-  min-height: 50px;
-  display: block;
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+  .fotoMenu {
+    height: 96px;
+    width: 96px;
+    min-width: 40px;
+    min-height: 20px;
+    display: block;
+  }
 }
+
+/* Small devices (portrait tablets and large phones, 601px and up) */
+@media only screen and (min-width: 601px) {
+  .fotoMenu {
+    height: 128px;
+    width: 128px;
+    min-width: 50px;
+    min-height: 25px;
+    display: block;
+  }
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+  .fotoMenu {
+    height: 128px;
+    width: 128px;
+    min-width: 60px;
+    min-height: 30px;
+    display: block;
+  }
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+  .fotoMenu {
+    height: 128px;
+    width: 128px;
+    min-width: 100px;
+    min-height: 50px;
+    display: block;
+  }
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+/* @media only screen and (min-width: 1200px) {...} */
+
+.wrapWhiteSpace {
+  white-space: normal;
+}
+
 .cardMenu {
   max-width: 80%;
   display: block;
