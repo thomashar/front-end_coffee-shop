@@ -95,7 +95,7 @@
               </div>
             </v-card-text>
           </v-card>
-          <v-snackbar v-model="snackbar" :color="color" timeout="2000" bottom>
+          <v-snackbar v-model="snackbar" :color="color" timeout="4000" bottom>
             {{error_message}}
           </v-snackbar>
         </v-flex>
