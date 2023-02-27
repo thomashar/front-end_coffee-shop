@@ -21,7 +21,7 @@
             :headers="headers"
             :items="transaksisComp"
             :search="search"
-            :sort-by="headers.tanggal_transaksi"
+            :sort-by="'headers.tanggal_transaksi'"
             :sort-desc="true">
             <template v-slot:[`item.status_pembayaran`]="{ item }">
               <v-list-item-action-text v-if="item.status_pembayaran === '0'" class="mr-2">
@@ -237,6 +237,22 @@
           </v-container>
         </v-dialog>
 
+        <v-dialog v-model="dialogLoading"
+          persistent
+          fullscreen
+          hide-overlay>
+          <v-container
+            fluid
+            fill-height
+            style="background-color: black; opacity: 40%">
+            <v-progress-circular
+              indeterminate
+              color="primary"
+              class="d-flex justify-center align-center ma-auto"
+            ></v-progress-circular>
+          </v-container>
+        </v-dialog>
+
         <v-dialog v-model="dialogConfirm" persistent max-width="400px">
             <v-card>
                 <v-card-title>
@@ -287,6 +303,7 @@ export default {
       dialogConfirm: false,
       dialogTambah: false,
       dialogEditTambah: false,
+      dialogLoading: false,
       headers: [
         {
           text: 'Nama Pembeli',
@@ -485,6 +502,7 @@ export default {
           this.pesanans[i].jumlah_menu = this.form.jumlah_menu
         }
       }
+      console.log(this.pesanans)
       if (this.dialog === true && this.inputType === 'Ubah' && this.statusData === 'Hapus') {
         this.deleteOneDP()
       } else {
@@ -594,6 +612,7 @@ export default {
         this.readData()
         this.updatePesanan()
         this.updateTransaksi()
+        this.dialogLoading = true
         this.inputType = 'Tambah'
       }).catch(error => {
         console.log(error)
@@ -611,6 +630,7 @@ export default {
 
       // this.detailPesanan.set('jumlah_menu', JSON.stringify(this.form.jumlah_menu))
       // this.detailPesanan.set('pesananId', JSON.stringify(this.pesananId))
+
       this.detailPesanan.set('data', JSON.stringify(this.tampungForm))
       console.log(this.detailPesanan)
 
@@ -625,12 +645,13 @@ export default {
         this.color = 'green'
         this.snackbar = true
         this.load = false
+        this.readDataPesanan(this.pesananId)
         this.close()
         this.readData()
-        this.readDataPesanan(this.pesananId)
         this.updatePesanan()
         this.updateTransaksi()
         this.inputType = 'Tambah'
+        this.dialogLoading = true
       }).catch(error => {
         this.error_message = error.response.data.message
         this.color = 'red'
@@ -639,7 +660,8 @@ export default {
       })
       this.detailPesanan.delete('data')
     },
-    updatePesanan () {
+    async updatePesanan () {
+      await this.Async()
       this.form.subtotal = 0
       for (let i = 0; i < this.pesanans.length; i++) {
         this.form.subtotal += (this.pesanans[i].jumlah_menu * this.pesanans[i].harga_menu)
@@ -672,7 +694,8 @@ export default {
       })
       this.pesananForm.delete('data')
     },
-    updateTransaksi () {
+    async updateTransaksi () {
+      await this.Async()
       this.form.total_harga = 0
       this.form.total_harga = (this.form.subtotal / 10) + this.form.subtotal
       this.transaksi.push(this.form.total_harga)
@@ -791,6 +814,7 @@ export default {
         this.close()
         this.updateTransaksi()
         this.updatePesanan()
+        this.dialogLoading = true
       }).catch(error => {
         this.error_message = error.response.data.message
         this.color = 'red'
@@ -802,7 +826,7 @@ export default {
       return new Promise((resolve) => {
         setTimeout(() => {
           resolve()
-        }, 2500)
+        }, 5000)
       })
     },
     tambahDetailPesan () {
@@ -891,11 +915,9 @@ export default {
       this.dialogConfirm = false
       this.dialogTambah = false
       this.dialogEditTambah = false
+      this.dialogLoading = false
       this.inputType = 'Tambah'
       this.statusData = ''
-      this.detailPesanan.delete('data')
-      this.transaksiForm.delete('data')
-      this.pesananForm.delete('data')
     },
     cancel () {
       this.resetForm()
@@ -904,6 +926,7 @@ export default {
       this.dialogConfirm = false
       this.dialogTambah = false
       this.dialogEditTambah = false
+      this.dialogLoading = false
       this.pesananId = ''
       this.menuId = ''
       this.detailPesananId = ''
